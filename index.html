@@ -403,12 +403,38 @@
     .trust .s { font-size: 12px; color: var(--cream-dim); }
 
     /* === Contact === */
+    .contact-wrap {
+      max-width: 880px; margin: 30px auto 0;
+    }
+    .contact-tabs {
+      display: flex; justify-content: center; gap: 0;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 36px;
+    }
+    .contact-tab {
+      background: none; border: 0; cursor: pointer;
+      padding: 14px 26px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--cream-dim);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 150ms, border-color 150ms;
+    }
+    .contact-tab:hover { color: var(--cream); }
+    .contact-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .contact-grid {
+      display: grid; grid-template-columns: 1.3fr 1fr; gap: 50px;
+      align-items: start;
+    }
+    @media (max-width: 760px) { .contact-grid { grid-template-columns: 1fr; gap: 32px; } }
     .contact-form {
-      max-width: 560px; margin: 30px auto 0;
       display: flex; flex-direction: column; gap: 14px;
     }
     .contact-form input,
-    .contact-form textarea {
+    .contact-form textarea,
+    .contact-form select {
       width: 100%; padding: 14px 16px;
       background: var(--bg-2); color: var(--cream);
       border: 1px solid var(--line); border-radius: 4px;
@@ -416,8 +442,58 @@
       outline: none;
     }
     .contact-form input:focus,
-    .contact-form textarea:focus { border-color: var(--gold); background: var(--bg-3); }
+    .contact-form textarea:focus,
+    .contact-form select:focus { border-color: var(--gold); background: var(--bg-3); }
     .contact-form textarea { min-height: 120px; resize: vertical; }
+    .contact-info {
+      background: var(--bg-2); border: 1px solid var(--line);
+      border-radius: 4px; padding: 28px;
+    }
+    .contact-info h3 {
+      font-family: 'Cinzel', serif; font-size: 14px;
+      letter-spacing: 2px; color: var(--gold);
+      text-transform: uppercase; margin: 0 0 18px;
+    }
+    .contact-info .info-row {
+      padding: 12px 0; border-bottom: 1px solid var(--line);
+    }
+    .contact-info .info-row:last-child { border-bottom: 0; padding-bottom: 0; }
+    .contact-info .info-row:first-child { padding-top: 0; }
+    .contact-info .info-label {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 4px;
+    }
+    .contact-info .info-value {
+      font-size: 14px; color: var(--cream);
+      line-height: 1.5;
+    }
+    .contact-info .info-value a {
+      color: var(--cream); text-decoration: none;
+      border-bottom: 1px solid var(--gold);
+    }
+    .contact-info .info-value a:hover { color: var(--gold); }
+    .form-pane { display: none; }
+    .form-pane.active { display: block; }
+    .form-help {
+      font-size: 12px; color: var(--cream-dim);
+      margin: 0 0 14px;
+      line-height: 1.5;
+    }
+    .form-status {
+      text-align: center;
+      margin: 6px 0 0;
+      min-height: 20px;
+      font-size: 13px;
+      color: var(--cream-dim);
+    }
+    .contact-form select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23a09078' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 40px;
+    }
 
     /* === Footer === */
     footer {
@@ -726,23 +802,144 @@
 
 <!-- =========== Contact / Order =========== -->
 <section id="contact">
-  <div class="wrap narrow">
-    <p class="section-label">Order or Reach Us</p>
+  <div class="wrap">
+    <p class="section-label">Contact</p>
     <h2 class="section-title">Get In Touch</h2>
-    <p class="section-subtitle">During the launch phase, we take orders by email and phone — we ship within two business days of payment confirmation. Drop a line and we'll send back size options, payment instructions, and shipping details.</p>
+    <p class="section-subtitle">During the launch phase, orders go through email and phone. We ship within two business days of payment confirmation. Wholesale and retail inquiries below.</p>
 
-    <div style="text-align:center; margin: 30px 0 10px;">
-      <a href="mailto:info@hemphaustx.com?subject=HempHaus%20order" class="btn primary" style="margin-bottom:10px;">📧 Email info@hemphaustx.com</a>
+    <div class="contact-wrap">
+      <div class="contact-tabs">
+        <button type="button" class="contact-tab active" data-pane="retail" onclick="switchContactTab('retail')">Order &amp; Questions</button>
+        <button type="button" class="contact-tab" data-pane="wholesale" onclick="switchContactTab('wholesale')">Wholesale &amp; Spa</button>
+        <button type="button" class="contact-tab" data-pane="press" onclick="switchContactTab('press')">Press &amp; Other</button>
+      </div>
+
+      <div class="contact-grid">
+        <div>
+          <!-- RETAIL PANE -->
+          <div class="form-pane active" id="pane-retail">
+            <p class="form-help">For individual orders, sizing questions, ingredients, shipping, returns. We respond within one business day.</p>
+            <form class="contact-form" action="https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID" method="POST" onsubmit="return handleFormSubmit(event, this, 'retail')">
+              <input type="hidden" name="_subject" value="HempHaus — retail inquiry">
+              <input type="hidden" name="form_type" value="retail">
+              <input type="text" name="name" placeholder="Your name" required>
+              <input type="email" name="email" placeholder="Email address" required>
+              <input type="tel" name="phone" placeholder="Phone (optional, for callback)">
+              <select name="interest" required>
+                <option value="">What can we help with?</option>
+                <option>Place an order — 375mg sample</option>
+                <option>Place an order — 1500mg jar</option>
+                <option>Place an order — 3000mg jar</option>
+                <option>Mixed order / multiple sizes</option>
+                <option>Question about ingredients or use</option>
+                <option>Shipping or return question</option>
+                <option>Other</option>
+              </select>
+              <textarea name="message" placeholder="Anything else we should know? (Quantity, ship-to ZIP, deadline, etc.)" required></textarea>
+              <button type="submit" class="btn primary">Send Inquiry</button>
+              <p class="form-status" id="status-retail"></p>
+            </form>
+          </div>
+
+          <!-- WHOLESALE PANE -->
+          <div class="form-pane" id="pane-wholesale">
+            <p class="form-help">For CBD shops, day spas, salons, yoga and wellness studios, organic groceries, tattoo studios, and other retail partners. We send wholesale terms within one business day and ship product samples to qualified buyers at no cost.</p>
+            <form class="contact-form" action="https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID" method="POST" onsubmit="return handleFormSubmit(event, this, 'wholesale')">
+              <input type="hidden" name="_subject" value="HempHaus — wholesale inquiry">
+              <input type="hidden" name="form_type" value="wholesale">
+              <input type="text" name="business_name" placeholder="Business name" required>
+              <input type="text" name="contact_name" placeholder="Your name" required>
+              <input type="email" name="email" placeholder="Email" required>
+              <input type="tel" name="phone" placeholder="Phone (for callback)" required>
+              <select name="business_type" required>
+                <option value="">Type of business</option>
+                <option>CBD specialty retail</option>
+                <option>Smoke / vape shop</option>
+                <option>Day spa</option>
+                <option>Med spa</option>
+                <option>Massage therapy practice</option>
+                <option>Yoga / Pilates / fitness studio</option>
+                <option>Salon / barbershop</option>
+                <option>Tattoo studio</option>
+                <option>Chiropractic / sports medicine</option>
+                <option>Apothecary / boutique</option>
+                <option>Natural grocery / co-op</option>
+                <option>Distributor / B2B</option>
+                <option>Other</option>
+              </select>
+              <input type="text" name="city_state" placeholder="City, state" required>
+              <textarea name="message" placeholder="Tell us about your shop — number of locations, what brands you currently carry, anything that helps us evaluate fit." required></textarea>
+              <button type="submit" class="btn primary">Submit Wholesale Inquiry</button>
+              <p class="form-status" id="status-wholesale"></p>
+            </form>
+          </div>
+
+          <!-- PRESS / OTHER PANE -->
+          <div class="form-pane" id="pane-press">
+            <p class="form-help">For press, collaborations, partnerships, lab inquiries, supplier outreach, and anything that doesn't fit the other two paths.</p>
+            <form class="contact-form" action="https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID" method="POST" onsubmit="return handleFormSubmit(event, this, 'press')">
+              <input type="hidden" name="_subject" value="HempHaus — press / other inquiry">
+              <input type="hidden" name="form_type" value="press">
+              <input type="text" name="name" placeholder="Your name" required>
+              <input type="text" name="organization" placeholder="Organization / publication">
+              <input type="email" name="email" placeholder="Email" required>
+              <textarea name="message" placeholder="What's the nature of your inquiry?" required></textarea>
+              <button type="submit" class="btn primary">Send</button>
+              <p class="form-status" id="status-press"></p>
+            </form>
+          </div>
+        </div>
+
+        <!-- CONTACT INFO SIDEBAR -->
+        <aside class="contact-info">
+          <h3>Direct contact</h3>
+          <div class="info-row">
+            <div class="info-label">Email</div>
+            <div class="info-value">
+              <a href="mailto:info@hemphaustx.com">info@hemphaustx.com</a>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Wholesale</div>
+            <div class="info-value">
+              <a href="mailto:wholesale@hemphaustx.com">wholesale@hemphaustx.com</a>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Phone</div>
+            <div class="info-value">
+              By appointment via email request
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Hours</div>
+            <div class="info-value">
+              Mon – Fri, 9 AM – 6 PM CT<br>
+              Inquiries answered same or next business day
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Headquarters</div>
+            <div class="info-value">
+              San Antonio, Texas
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Manufacturer</div>
+            <div class="info-value">
+              Hawley Hemp Labs, Inc.<br>
+              Hawley, Texas
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Lab Results (COA)</div>
+            <div class="info-value">
+              Available per batch on request via the QR code on each tin or by email
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
-
-    <form class="contact-form" id="contact-form" onsubmit="event.preventDefault(); handleContact()">
-      <input type="text" name="name" placeholder="Name" required>
-      <input type="email" name="email" placeholder="Email" required>
-      <input type="text" name="phone" placeholder="Phone (optional)">
-      <textarea name="message" placeholder="What size are you interested in? Questions? Wholesale inquiry?" required></textarea>
-      <button type="submit" class="btn primary">Send</button>
-      <p id="contact-status" style="text-align:center; color: var(--green-bright); margin: 6px 0 0; min-height: 20px; font-size: 13px;"></p>
-    </form>
   </div>
 </section>
 
@@ -799,18 +996,66 @@
 <script>
   // Stub contact handler — replace with real Formspree/Resend integration
   // when ready. For now, surfaces a mailto fallback so leads aren't lost.
-  function handleContact() {
-    const form = document.getElementById('contact-form');
-    const data = new FormData(form);
-    const subj = encodeURIComponent('HempHaus order inquiry — ' + (data.get('name') || ''));
-    const body = encodeURIComponent(
-      'Name: ' + (data.get('name') || '') + '\\n' +
-      'Email: ' + (data.get('email') || '') + '\\n' +
-      'Phone: ' + (data.get('phone') || '') + '\\n\\n' +
-      (data.get('message') || '')
-    );
-    window.location.href = 'mailto:info@hemphaustx.com?subject=' + subj + '&body=' + body;
-    document.getElementById('contact-status').textContent = 'Opening your email client...';
+  function switchContactTab(pane) {
+    document.querySelectorAll('.contact-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.pane === pane);
+    });
+    document.querySelectorAll('.form-pane').forEach(p => {
+      p.classList.toggle('active', p.id === 'pane-' + pane);
+    });
+  }
+
+  function handleFormSubmit(event, form, paneName) {
+    const status = document.getElementById('status-' + paneName);
+    const action = form.getAttribute('action') || '';
+
+    // If Formspree endpoint isn't configured yet, fall back to mailto
+    if (action.includes('REPLACE_WITH_YOUR_FORM_ID')) {
+      event.preventDefault();
+      const data = new FormData(form);
+      const subject = data.get('_subject') || 'HempHaus inquiry';
+      let body = '';
+      data.forEach((value, key) => {
+        if (!key.startsWith('_') && key !== 'form_type' && value) {
+          body += key.replace(/_/g, ' ') + ': ' + value + '\\n';
+        }
+      });
+      window.location.href = 'mailto:info@hemphaustx.com?subject=' +
+        encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+      status.textContent = 'Opening your email client...';
+      status.style.color = 'var(--cream-dim)';
+      return false;
+    }
+
+    // AJAX submission via Formspree
+    event.preventDefault();
+    status.textContent = 'Sending...';
+    status.style.color = 'var(--cream-dim)';
+
+    fetch(action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json' }
+    })
+      .then(response => {
+        if (response.ok) {
+          status.textContent = 'Thank you. We will get back to you within one business day.';
+          status.style.color = 'var(--green-bright)';
+          form.reset();
+        } else {
+          response.json().then(data => {
+            status.textContent = (data.errors && data.errors[0] && data.errors[0].message)
+              || 'Something went wrong. Please email info@hemphaustx.com directly.';
+            status.style.color = 'var(--gold)';
+          });
+        }
+      })
+      .catch(() => {
+        status.textContent = 'Connection error. Please email info@hemphaustx.com directly.';
+        status.style.color = 'var(--gold)';
+      });
+
+    return false;
   }
 
   // Smooth scroll on anchor click
