@@ -10,6 +10,8 @@
   <meta property="og:description" content="Broad-spectrum CBD salve in three strengths. Organic ingredients, Texas beeswax, third-party lab tested.">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="images/icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="images/icon-512.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -99,14 +101,23 @@
     }
     .brand {
       font-family: 'Cinzel', Georgia, serif;
-      font-size: 19px;
+      font-size: 18px;
       letter-spacing: 4px;
       font-weight: 500;
       color: var(--cream);
       text-decoration: none;
-      display: flex; align-items: baseline; gap: 8px;
+      display: flex; align-items: center; gap: 12px;
     }
-    .brand .inc { color: var(--gold); font-size: 13px; letter-spacing: 3px; }
+    .brand .inc { color: var(--gold); font-size: 12px; letter-spacing: 3px; margin-left: 4px; }
+    .brand-mark {
+      width: 44px; height: 44px;
+      display: block;
+      flex-shrink: 0;
+    }
+    .brand-text { display: flex; align-items: baseline; gap: 4px; line-height: 1; }
+    @media (max-width: 460px) {
+      .brand-mark { width: 36px; height: 36px; }
+    }
     nav { display: flex; gap: 26px; }
     nav a {
       color: var(--cream-dim); text-decoration: none;
@@ -130,6 +141,13 @@
       background:
         radial-gradient(ellipse at top, #1a1f1a 0%, var(--bg) 60%);
       border-bottom: 1px solid var(--line);
+    }
+    .hero-mark {
+      display: block;
+      margin: 0 auto 28px;
+      width: clamp(140px, 22vw, 220px);
+      height: auto;
+      filter: drop-shadow(0 4px 24px rgba(0,0,0,0.55));
     }
     .hero .arch {
       font-family: 'Cinzel', Georgia, serif;
@@ -451,7 +469,10 @@
 <!-- =========== Topbar =========== -->
 <header class="topbar">
   <div class="wrap inner">
-    <a href="#top" class="brand">HEMPHAUS <span class="inc">INC</span></a>
+    <a href="#top" class="brand">
+      <img src="images/logo.png" class="brand-mark" alt="HempHaus" width="44" height="44">
+      <span class="brand-text">HEMPHAUS<span class="inc">INC</span></span>
+    </a>
     <nav>
       <a href="#products">Products</a>
       <a href="#ingredients">Ingredients</a>
@@ -466,6 +487,7 @@
 <a id="top"></a>
 <section class="hero">
   <div class="wrap">
+    <img src="images/logo.png" class="hero-mark" alt="HempHaus Inc." width="220" height="220">
     <p class="arch">Pure. Uncompromised.</p>
     <p class="sub">Broad-Spectrum CBD · Organic · Made in Texas</p>
     <h1 class="lede">CBD-infused salve, in three strengths,<br>built on a foundation of ingredients you can read.</h1>
@@ -729,7 +751,10 @@
   <div class="wrap">
     <div class="row">
       <div>
-        <a href="#top" class="brand" style="margin-bottom: 14px; display: block;">HEMPHAUS <span class="inc">INC</span></a>
+        <a href="#top" class="brand" style="margin-bottom: 14px;">
+          <img src="images/logo.png" class="brand-mark" alt="HempHaus" width="44" height="44">
+          <span class="brand-text">HEMPHAUS<span class="inc">INC</span></span>
+        </a>
         <p style="font-size: 13px; color: var(--cream-dim); margin: 0 0 14px; max-width: 320px;">Broad-spectrum CBD-infused organic salve. Made in Texas. Lab-tested every batch.</p>
         <p style="font-size: 11px; color: var(--muted);">info@hemphaustx.com</p>
       </div>
