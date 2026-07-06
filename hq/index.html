@@ -2787,7 +2787,7 @@ function autoBuildTodayQueue(){
  const status = p.status||'new';
  if(status==='closed'||status==='dead') continue;
  const score = p.lead?.score||0;
- if(score<60 && status==='new') continue;  // gate on score for new prospects only
+ if(score<7 && status==='new') continue;   // gate on score for new prospects only (score is 1–10, not 1–100)
  const log = p.log||[];
  const last = log.length ? log[log.length-1] : null;
  const lastTs = last && last.isoDate ? new Date(last.isoDate).getTime() : 0;
@@ -3685,12 +3685,28 @@ function addSelectedToProspects(){
 }
 
 // ══ CHECKBOXES / LAYOUT ═══════════════════════════════════════════════════════
+// Let the browser's native <label for> semantics toggle the checkbox once, then
+// sync the ".checked" class from the resulting input state via the change event.
+// Manually flipping cb.checked here on click double-toggled with the browser default,
+// leaving input.checked opposite of the visual class.
 document.querySelectorAll('.check-item').forEach(item=>{
- item.addEventListener('click',()=>{const cb=item.querySelector('input');cb.checked=!cb.checked;item.classList.toggle('checked',cb.checked);});
+ const cb = item.querySelector('input');
+ if(!cb) return;
+ // Initial sync — some items start `checked` in markup
+ item.classList.toggle('checked', cb.checked);
+ cb.addEventListener('change', () => item.classList.toggle('checked', cb.checked));
 });
 document.getElementById('state-select').addEventListener('change',function(){
  const zip=this.options[this.selectedIndex].getAttribute('data-zip');
  if(zip) document.getElementById('zip-input').value=zip;
+ // Manual geo change → clear the nationwide flag so runAgent uses the geo-bounded prompt
+ window._scoutNationwide = false;
+ window._scoutSupplierFocus = null;
+});
+// Same reset when Ivan hand-types a ZIP or radius
+['zip-input','radius-input'].forEach(id=>{
+ const el = document.getElementById(id);
+ if(el) el.addEventListener('input',()=>{ window._scoutNationwide = false; window._scoutSupplierFocus = null; });
 });
 document.querySelectorAll('.filter-btn').forEach(btn=>{
  btn.addEventListener('click',()=>{
@@ -3757,7 +3773,7 @@ function renderLeads(filter='all'){
    return m ? m[1] : 'ZZ';
  };
  if(sort==='score') leads.sort((a,b)=>b.score-a.score);
- else if(sort==='name') leads.sort((a,b)=>a.name.localeCompare(b.name));
+ else if(sort==='name') leads.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
  else if(sort==='type') leads.sort((a,b)=>(a.type||'').localeCompare(b.type||''));
  else if(sort==='state') leads.sort((a,b)=>stateOf(a).localeCompare(stateOf(b)) || b.score-a.score);
 
@@ -4275,7 +4291,6 @@ function copyTSVProspects(){copyTSV('prospects');}
 function copyTSVScout(){copyTSV('scout');}
 function exportCSVScout(){exportCSV('scout');}
 function exportCSVProspects(){exportCSV('prospects');}
-function exportCSVScout(){exportCSV('scout');}
 
 // ══ GOOGLE SHEETS SYNC ═══════════════════════════════════════════════════════
 async function syncToSheets(){
