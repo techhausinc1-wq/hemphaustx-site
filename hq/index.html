@@ -4390,32 +4390,100 @@ async function runAgent(){
  const userAsk = nationwide
    ? `Scout ${depth}+ Farm-Bill-compliant hemp wholesale suppliers ANYWHERE in the United States that can ship to Texas. ${supplierFocus?('Only category: '+supplierFocus+'. '):''}Return the JSON only.`
    : `Scout hemp product and packaging leads in ${stateName}, ZIP ${zip}, ${radius} ${unit}. Find ${typeStr}. Target ${depth}+ leads. JSON only.`;
- const messages=[{role:'user',content:userAsk}];
- let searchCount=0,finalText='';
- // Progressive search budget — cap max_uses at 6 (was 15). The 15-search Sonnet
- // scans routinely dropped connection on flaky Wi-Fi. Haiku 4.5 finishes in
- // 20-30s vs Sonnet's 60-90s, with equivalent quality for lead extraction.
- // Nationwide supplier scout needs deeper search (more states → more queries).
- const budgets = nationwide
-   ? [10, 7, 5]
-   : checkedTypes.length<=2 ? [6, 3] : checkedTypes.length<=4 ? [5, 3] : [4, 2];
- const maxTokens = nationwide ? 16000 : 8000;
- const scoutTimeoutMs = nationwide ? 180000 : 90000;
+ let searchCount=0;
+ // Robust JSON extraction — try markdown fence first, then greedy match, then line-scan fallback
+ const parseLeads = (finalText) => {
+   let parsed = null;
+   const fenceMatch = finalText.match(/```(?:json)?\s*([\s\S]*?)```/);
+   if(fenceMatch){ try{ parsed = JSON.parse(fenceMatch[1].trim()); }catch(_){} }
+   if(!parsed?.leads?.length){
+     const m = finalText.match(/\{[\s\S]*\}/);
+     if(m){
+       try{ parsed = JSON.parse(m[0]); }
+       catch(e){ try{ parsed = JSON.parse(m[0].replace(/[\x00-\x1F\x7F]/g,' ')); }catch(_){} }
+     }
+   }
+   if(!parsed?.leads?.length) parsed = extractLeads(finalText);
+   return parsed || { leads: [] };
+ };
+ // Nationwide supplier scout runs in ROUNDS to sidestep any single-call
+ // truncation from the model. Each round asks for ~10 fresh leads and passes
+ // the accumulated known-names list to Fred so it dedupes across rounds.
+ // Retail / local scans keep the original single-shot flow.
  let lastErr = null;
  try{
+ if(nationwide){
+   const model = 'claude-sonnet-4-5';   // Sonnet handles 40+ record JSON reliably; Haiku sometimes truncates
+   const rounds = 5;
+   const perRound = Math.max(6, Math.ceil(depth / rounds));
+   const searchBudget = 5;              // per round; keeps each call under 90s
+   allLeads = [];
+   const roundTimeoutMs = 120000;
+   for(let r = 1; r <= rounds; r++){
+     const seenNames = allLeads.map(l => l.name).filter(Boolean);
+     const seenBlock = seenNames.length
+       ? `\nALREADY FOUND (do NOT return any of these — return only NEW distinct companies): ${seenNames.join(' · ')}.`
+       : '';
+     const roundUser = `${userAsk}\nROUND ${r} of ${rounds}: return ${perRound} NEW suppliers this round. Cover at least 3 different states this round. ${supplierFocus?('Only category: '+supplierFocus+'. '):''}${seenBlock}\nReturn the JSON only.`;
+     log(`Round ${r}/${rounds} — asking Fred for ${perRound} new suppliers…`,'search');
+     try {
+       const res = await fetchWithRetry(WORKER_URL, {
+         method:'POST',
+         headers:{'Content-Type':'application/json'},
+         timeoutMs: roundTimeoutMs,
+         body: JSON.stringify({
+           _accessCode: WORKER_AUTH,
+           model,
+           max_tokens: 8000,
+           system: systemPrompt,
+           tools: [{type:'web_search_20250305', name:'web_search', max_uses: searchBudget}],
+           messages: [{role:'user', content: roundUser}],
+         }),
+       });
+       if(!res.ok){ const e = await res.json().catch(()=>({})); throw new Error(e.error?.message || `HTTP ${res.status}`); }
+       const data = await res.json();
+       if(data.error) throw new Error(data.error.message);
+       let finalText = '';
+       for(const block of (data.content||[])){
+         if(block.type==='text') finalText += block.text;
+         if((block.type==='server_tool_use'||block.type==='tool_use') && block.name==='web_search'){
+           searchCount++;
+           log(`Search ${searchCount}: ${block.input?.query || '...'}`, 'search');
+         }
+       }
+       const parsed = parseLeads(finalText);
+       const fresh = (parsed.leads || []).filter(l => l && l.name && !seenNames.includes(l.name));
+       allLeads = allLeads.concat(fresh);
+       log(`Round ${r} → +${fresh.length} new (total ${allLeads.length}/${depth})`, fresh.length ? 'found' : 'search');
+       renderLeads('all');   // incremental render so Ivan sees progress
+       if(allLeads.length >= depth) break;
+     } catch(inner){
+       lastErr = inner;
+       log(`Round ${r} failed: ${inner.message}. Continuing…`, 'search');
+     }
+   }
+   if(!allLeads.length){
+     log(`No leads extracted after ${rounds} rounds. (Last error: ${lastErr?lastErr.message:'none'})`);
+     showToast('Nationwide scan finished with 0 leads — check the log for errors','error');
+   } else {
+     log(`Nationwide scan complete — ${allLeads.length} suppliers found across ${new Set(allLeads.map(l=>((l.address||'').match(/,\s*([A-Z]{2})\b/)||[])[1]).filter(Boolean)).size} states. Top score: ${Math.max(...allLeads.map(l=>l.score||0))}/10`,'done');
+     saveScanCache(allLeads, state, zip, radius, unit);
+     showToast(`Scan complete — ${allLeads.length} suppliers found`,'success');
+   }
+ } else {
+   // Legacy single-shot geo-bounded scan
+   const budgets = checkedTypes.length<=2 ? [6, 3] : checkedTypes.length<=4 ? [5, 3] : [4, 2];
+   let finalText = '';
    for(let attempt = 0; attempt < budgets.length; attempt++){
      const searchBudget = budgets[attempt];
      const attemptLabel = attempt === 0 ? '' : ` (retry with ${searchBudget} searches after a network drop)`;
      log(`Scanning${attemptLabel}…`,'search');
      try {
-       // Fred (web_search_20250305) is a SERVER-side tool — results come back in
-       // the same response, no client-side tool_use loop needed.
-       const res=await fetchWithRetry(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},timeoutMs:scoutTimeoutMs,body:JSON.stringify({_accessCode:WORKER_AUTH,model:'claude-haiku-4-5-20251001',max_tokens:maxTokens,system:systemPrompt,tools:[{type:'web_search_20250305',name:'web_search',max_uses:searchBudget}],messages})});
+       const res = await fetchWithRetry(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},timeoutMs:90000,body:JSON.stringify({_accessCode:WORKER_AUTH,model:'claude-haiku-4-5-20251001',max_tokens:8000,system:systemPrompt,tools:[{type:'web_search_20250305',name:'web_search',max_uses:searchBudget}],messages:[{role:'user',content:userAsk}]})});
        if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||`HTTP ${res.status}`);}
        const data=await res.json();if(data.error)throw new Error(data.error.message);
-       const blocks=data.content||[];
        finalText='';
-       for(const block of blocks){
+       for(const block of (data.content||[])){
          if(block.type==='text') finalText+=block.text;
          if((block.type==='server_tool_use'||block.type==='tool_use')&&block.name==='web_search'){searchCount++;log(`Search ${searchCount}: ${block.input?.query||'...'}`,'search');}
        }
@@ -4426,25 +4494,20 @@ async function runAgent(){
        log(`Attempt ${attempt+1} failed: ${inner.message}. Retrying with smaller budget…`,'search');
      }
    }
- log(`Agent complete — parsing...`,'found');
- let parsed=null;
- // Robust JSON extraction — try markdown fence first, then greedy match
- const fenceMatch=finalText.match(/```(?:json)?\s*([\s\S]*?)```/);
- if(fenceMatch){try{parsed=JSON.parse(fenceMatch[1].trim());}catch(_){}}
- if(!parsed?.leads?.length){
-   const m=finalText.match(/\{[\s\S]*\}/);
-   if(m){try{parsed=JSON.parse(m[0]);}catch(e){try{parsed=JSON.parse(m[0].replace(/[\x00-\x1F\x7F]/g,' '));}catch(e2){}}}
+   log(`Agent complete — parsing...`,'found');
+   const parsed = parseLeads(finalText);
+   allLeads = parsed.leads || [];
+   if(!allLeads.length){
+     log(`No leads extracted. Try adjusting area or filters. (Last error: ${lastErr?lastErr.message:'none'})`);
+     showToast('Scan completed but no leads matched — try adjusting area, radius, or types','error');
+   } else {
+     log(`${allLeads.length} leads found. Top score: ${Math.max(...allLeads.map(l=>l.score))}/10`,'done');
+     if(parsed.summary) log(`${parsed.summary}`,'done');
+     saveScanCache(allLeads, state, zip, radius, unit);
+     renderLeads('all');
+     showToast(`Scan complete — ${allLeads.length} leads found`,'success');
+   }
  }
- if(!parsed?.leads?.length)parsed=extractLeads(finalText);
- allLeads=parsed?.leads||[];
- if(!allLeads.length){log(`No leads extracted. Try adjusting area or filters. (Last error: ${lastErr?lastErr.message:'none'})`);showToast('Scan completed but no leads matched — try adjusting area, radius, or types','error');}
- else{
- log(`${allLeads.length} leads found. Top score: ${Math.max(...allLeads.map(l=>l.score))}/10`,'done');
- if(parsed.summary)log(`${parsed.summary}`,'done');
- saveScanCache(allLeads, state, zip, radius, unit);
- renderLeads('all');
- showToast(`Scan complete — ${allLeads.length} leads found`,'success');
-    }
   }catch(err){
     const msg = err.message || String(err);
     log(`Error: ${msg}`);
