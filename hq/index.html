@@ -990,6 +990,7 @@ a.act-btn:hover{text-decoration:none;}
           <button class="filter-btn" data-filter="extractor">· Extractors</button>
           <button class="filter-btn" data-filter="brand">· Brand Mfrs</button>
           <button class="filter-btn" data-filter="distributor">· Distributors</button>
+          <button class="filter-btn" data-filter="whitelabel" style="border-color:var(--green);color:var(--green);">✉ White-label</button>
           <input type="text" id="lead-search" placeholder="Search company / product / state…" oninput="renderLeads(document.querySelector('.filter-btn.active')?.dataset.filter||'all')" style="flex:1;min-width:180px;padding:7px 11px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg3);color:var(--text);outline:none;">
           <button class="hdr-btn" onclick="copyTSVScout()" title="Copy the leads currently shown as tab-separated rows — paste into Google Sheets / Excel / Numbers" style="font-size:11px;">Copy call sheet</button>
           <button class="hdr-btn" onclick="exportCSVScout()" title="Download leads as .csv" style="font-size:11px;">Export CSV</button>
@@ -2295,6 +2296,7 @@ a.act-btn:hover{text-decoration:none;}
 <!-- FLOATING SELECTION BAR -->
 <div id="floating-bar">
   <span class="fbar-count" id="fbar-count">0 selected</span>
+  <button class="fbar-btn" onclick="openBulkGmail()" style="background:#c5221f;">✉ Bulk Gmail</button>
   <button class="fbar-btn" onclick="addSelectedToProspects()">Add to prospects</button>
   <button class="fbar-clear" onclick="clearSelection()">Clear</button>
 </div>
@@ -2663,6 +2665,7 @@ const QUICK_PRESETS = [
   {label:'★ Nationwide · Cultivators + Farms', icon:'', nationwide:true, supplierFocus:'cultivator', state:'', zip:'', radius:0, types:['wholesale']},
   {label:'★ Nationwide · Distillate + Isolate Labs', icon:'', nationwide:true, supplierFocus:'extractor', state:'', zip:'', radius:0, types:['wholesale']},
   {label:'★ Nationwide · White-Label / Brand Mfrs', icon:'', nationwide:true, supplierFocus:'brand', state:'', zip:'', radius:0, types:['wholesale']},
+  {label:'★ White-Label ONLY (outreach ready)', icon:'', nationwide:true, supplierFocus:'brand', whitelabelOnly:true, state:'', zip:'', radius:0, types:['wholesale']},
   {label:'San Antonio · Smoke', icon:'', state:'TX', zip:'78230', radius:20, types:['smoke','vape']},
   {label:'San Antonio · Wellness', icon:'', state:'TX', zip:'78230', radius:20, types:['cbd','wellness','natural']},
   {label:'San Antonio · All', icon:'', state:'TX', zip:'78230', radius:25, types:['smoke','vape','cbd','wellness','natural']},
@@ -3466,10 +3469,12 @@ function quickAddToToday(leadJson){
 // and switch prompt to the nationwide supplier rubric.
 window._scoutNationwide = false;
 window._scoutSupplierFocus = null;   // 'cultivator' | 'extractor' | 'brand' | null (all)
+window._scoutWhitelabelOnly = false; // if true, filter results to whitelabel=yes/maybe
 function runQuickPreset(idx){
  const preset = QUICK_PRESETS[idx]; if(!preset) return;
  window._scoutNationwide = !!preset.nationwide;
  window._scoutSupplierFocus = preset.supplierFocus || null;
+ window._scoutWhitelabelOnly = !!preset.whitelabelOnly;
  const stateSel = document.getElementById('state-select');
  const zipInp = document.getElementById('zip-input');
  const radInp = document.getElementById('radius-input');
@@ -3759,6 +3764,13 @@ function renderLeads(filter='all'){
  else if(filter==='extractor')  leads=leads.filter(l=>/extract|isolate|distillate|lab/i.test(l.type||''));
  else if(filter==='brand')      leads=leads.filter(l=>/brand|manufactur|vertically/i.test(l.type||''));
  else if(filter==='distributor')leads=leads.filter(l=>/distribut|wholesale/i.test(l.type||''));
+ else if(filter==='whitelabel') leads=leads.filter(l=>{
+   const w = String(l.whitelabel||'').toLowerCase();
+   if(w === 'yes' || w === 'maybe') return true;
+   // Fallback for older scans that lacked the field — infer from productsToBuy
+   const p = (l.productsToBuy || '').toLowerCase();
+   return /gumm|tincture|topical|salve|cream|balm|pre-roll|vape|softgel|capsule|beverage/.test(p);
+ });
  else if(filter!=='all') leads=leads.filter(l=>(l.type||'').toLowerCase().includes(filter));
  if(q){
    leads = leads.filter(l => {
@@ -3814,6 +3826,16 @@ function renderLeads(filter='all'){
         ${lead.phone?`<div class="info-row"><span class="info-icon" style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;min-width:36px;display:inline-block;">Tel</span><span class="info-val">${lead.phone}</span></div>`:''}
         ${lead.email?`<div class="info-row"><span class="info-icon" style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;min-width:36px;display:inline-block;">Email</span><span class="info-val" style="word-break:break-all;font-size:11px;">${lead.email}</span></div>`:''}
         ${lead.website?`<div class="info-row"><span class="info-icon" style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;min-width:36px;display:inline-block;">Web</span><span class="info-val" style="word-break:break-all;font-size:10px;">${lead.website}</span></div>`:''}
+        ${(() => {
+          const w = String(lead.whitelabel||'').toLowerCase();
+          if(!w || w === 'no') return '';
+          const isYes = w === 'yes';
+          const bg = isYes ? 'rgba(42,122,66,0.15)' : 'rgba(184,105,42,0.12)';
+          const fg = isYes ? 'var(--green)' : '#B8692A';
+          const label = isYes ? '✓ White-label capable' : '~ Possibly white-label';
+          const note = lead.whitelabelNote ? ` — <span style="color:var(--text2);">${lead.whitelabelNote}</span>` : '';
+          return `<div style="background:${bg};padding:6px 10px;border-radius:6px;margin-top:6px;font-size:11px;color:${fg};font-weight:600;line-height:1.5;">${label}${note}</div>`;
+        })()}
         ${lead.productsToBuy?`<div style="background:rgba(42,122,66,0.08);padding:8px 10px;border-radius:6px;margin-top:6px;border-left:3px solid var(--green);"><div style="font-size:9px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Buy from them</div><div style="color:var(--text);font-size:11px;line-height:1.55;word-break:normal;overflow-wrap:anywhere;">${lead.productsToBuy}</div>${lead.moq?`<div style="font-size:10px;color:var(--text3);margin-top:5px;word-break:normal;overflow-wrap:anywhere;"><strong style="color:var(--text2);">MOQ:</strong> ${lead.moq}</div>`:''}</div>`:''}
         ${lead.notes?`<div class="info-row" style="background:var(--bg3);padding:7px 10px;border-radius:6px;margin-top:4px;"><span class="info-val" style="color:var(--text2);font-size:11px;line-height:1.55;display:block;">${lead.notes}</span></div>`:''}
         ${tags?`<div class="tag-row">${tags}</div>`:''}
@@ -3867,8 +3889,14 @@ function renderLeads(filter='all'){
           const emailBtn = emailAddr && /@/.test(emailAddr)
             ? `<a class="act-btn" href="mailto:${encodeURI(emailAddr)}?subject=${encodeURIComponent('HempHaus — wholesale inquiry')}" title="${emailAddr}">Email</a>`
             : '';
+          // Gmail compose — pre-fills a personalized private-label inquiry.
+          // Uses the /mail/?view=cm URL which opens in a fresh Gmail compose tab.
+          const gmailBtn = emailAddr && /@/.test(emailAddr)
+            ? `<a class="act-btn" style="background:#c5221f;color:#fff;border-color:#c5221f;" onclick="event.stopPropagation();openGmailForLead('${enc}');return false;" href="#" title="Open Gmail with a personalized private-label inquiry pre-filled">✉ Gmail</a>`
+            : '';
           return (tel ? `<a class="act-btn" href="tel:${tel}">Call</a>` : '') +
                  emailBtn +
+                 gmailBtn +
                  `<a class="act-btn" href="${mapsHref}" target="_blank" rel="noopener" title="Google Maps — real website + hours + reviews + directions">Maps</a>` +
                  (webHref ? `<a class="act-btn" href="${webHref}" target="_blank" rel="noopener" title="Open the listed website (falls back to Google search if URL is bad)">Website</a>` : '');
         })()}
@@ -4318,6 +4346,7 @@ async function runAgent(){
  const depth=parseInt(document.getElementById('depth-select').value),priority=document.getElementById('priority-select').value;
  const nationwide = !!window._scoutNationwide;
  const supplierFocus = window._scoutSupplierFocus || null;   // narrows the nationwide prompt
+ const whitelabelOnly = !!window._scoutWhitelabelOnly;
  if(!nationwide){
    if(!state){alert('Please select a state.');return;}
    if(!zip){alert('Please enter a ZIP code.');return;}
@@ -4364,10 +4393,13 @@ async function runAgent(){
    supplierFocus==='extractor'  ? '\nFOCUS: Only return EXTRACTORS, ISOLATE LABS, and DISTILLATE PRODUCERS (CBD/CBG/CBN/THCA/D8 isolate/distillate, crude oil, water-soluble). Skip cultivators-only and brand-mfrs-only.' :
    supplierFocus==='brand'      ? '\nFOCUS: Only return WHITE-LABEL / PRIVATE-LABEL / BRAND MANUFACTURERS that can produce finished goods HempHaus can resell (gummies, tinctures, topicals, salves, pre-rolls, vapes) under our label or unbranded bulk. Skip pure biomass sellers.' :
    '';
+ const whitelabelInstruction = whitelabelOnly
+   ? '\nHARD FILTER: Only include suppliers with whitelabel=yes or whitelabel=maybe. HempHaus is building a private-label product line and will only email confirmed white-label capable manufacturers this round.'
+   : '';
  const wholesaleBlock = wholesaleMode ? (nationwide ? (
    `WHOLESALE TARGETS (buy-side — HempHaus is the buyer/supplier-seeker) — NATIONWIDE MODE:\n` +
    `Find LICENSED USDA-hemp / Farm-Bill-compliant wholesale operators ANYWHERE IN THE UNITED STATES. All returned suppliers MUST be legally shippable to Texas: ≤0.3% delta-9 THC dry weight, produce a Certificate of Analysis (COA) from an ISO-17025 lab, and either be registered under their state hemp program OR under a USDA-approved plan. Cover at least 15 different states across the response — do NOT cluster all leads in one region. Deprioritize states with restrictive re-shipment laws (ID/KS/IA/SD historically strict); prefer OR/CO/CA/KY/NC/TN/OK/NV/VT/ME/WI/MI/PA/NY.\n` +
-   focusInstruction + `\n` +
+   focusInstruction + whitelabelInstruction + `\n` +
    `AUTHORITATIVE SOURCES: state hemp program registries (KY Dept of Ag industrial hemp licensees, OR ODA hemp handler registry, CO CDA hemp registry, TN Dept of Ag hemp permits, NC Farm Bill hemp program, USDA Domestic Hemp Production Program licensees), USDA AMS licensed processors list, Confident Cannabis / Leafly wholesale directories, LinkedIn, and the operator's own website. Cross-reference against a Google business profile.\n` +
    `For each supplier set "type" to exactly one of: "Cultivator", "Extractor", "Distributor", "Brand Manufacturer", "Vertically Integrated", "Packaging Supplier".\n` +
    `SCORING 1-10 (wholesale — HempHaus is buying):\n- 9-10 = licensed + public wholesale pricing or a stated MOQ + Farm Bill compliant + ships to TX + COA available.\n- 7-8 = licensed + verified website with wholesale form/contact; MOQ unclear but wholesale operations obvious.\n- 5-6 = licensed but wholesale terms hidden behind a form / unresponsive.\n- 1-4 = listing only, no wholesale signal.\n` +
@@ -4384,7 +4416,7 @@ async function runAgent(){
    ? `MISSION: Find ${depth}+ Farm-Bill-compliant hemp wholesale suppliers across the United States (target coverage: 15+ distinct states). Every returned supplier must be able to legally ship to Texas.`
    : `MISSION: Find ${depth}+ leads in ${stateName}, near ZIP ${zip} within ${radius} ${unit}. Focus: ${priority==='independent'?'independent shops only':priority==='chains'?'small chains 2-5 locs':priority==='high'?'high-potential leads only':'all quality opportunities'}.`;
  const schemaHint = nationwide
-   ? `Return ONLY raw JSON no markdown:\n{"leads":[{"name":"...","type":"Cultivator|Extractor|Distributor|Brand Manufacturer|Vertically Integrated|Packaging Supplier","address":"City, ST","phone":"...","email":"wholesale@...","website":"root domain","productsToBuy":"...","moq":"...","score":8,"notes":"...","tags":[{"label":"Cultivator","color":"green"},{"label":"OR","color":"gray"}]}],"summary":"1-line coverage recap: states covered + strongest categories"}`
+   ? `Return ONLY raw JSON no markdown:\n{"leads":[{"name":"...","type":"Cultivator|Extractor|Distributor|Brand Manufacturer|Vertically Integrated|Packaging Supplier","address":"City, ST","phone":"...","email":"wholesale@...","website":"root domain","productsToBuy":"...","moq":"...","whitelabel":"yes|maybe|no","whitelabelNote":"1-line evidence: quoted site language or the finished-goods line they'd co-pack","score":8,"notes":"...","tags":[{"label":"Cultivator","color":"green"},{"label":"OR","color":"gray"}]}],"summary":"1-line coverage recap: states covered + strongest categories"}\nWHITE-LABEL DETECTION RULES: set whitelabel="yes" if their site or public materials explicitly mention private label, white label, custom formulation, contract manufacturing, or "your brand"; set "maybe" if they sell finished consumables (gummies, tinctures, topicals, salves, pre-rolls) but don't advertise white-label; set "no" if pure biomass/isolate seller with no finished-goods line. whitelabelNote must be 1 short sentence with concrete evidence (quoted site language OR the finished-goods line).`
    : `Return ONLY raw JSON no markdown:\n{"leads":[{"name":"...","type":"...","address":"...","phone":"...","website":"...","score":8,"notes":"...","tags":[{"label":"...","color":"green"}]}],"summary":"..."}`;
  const systemPrompt=`You are HempHaus Scout, a B2B lead generation agent for HempHaus Inc., a hemp product and packaging wholesale company in San Antonio, TX. HempHaus sells CBD, THCA, Delta-8 and other hemp-derived products, healing salve, and hemp packaging to retail accounts AND is actively sourcing from licensed wholesale suppliers.\n${missionLine}\n${retailBlock}\n${wholesaleBlock}\n${schemaHint}\nTag colors: green=positive, amber=opportunity, blue=info, gray=neutral.\nSearch aggressively. Only REAL businesses. License numbers in notes when retrievable.`;
  const userAsk = nationwide
@@ -4530,6 +4562,100 @@ function extractLeads(text){
     }
   }
  if(cur)leads.push(cur);return{leads};
+}
+
+// ══ GMAIL COMPOSE — private-label bulk outreach ══════════════════════════════
+// Ivan (or Jane) clicks "✉ Gmail" on any supplier lead. We generate a
+// personalized subject + body, URL-encode it, and open Gmail compose in a new
+// tab. From HempHaus's info@ inbox. No sending; user reviews + hits Send in Gmail.
+// Bulk mode: select N leads → "Bulk Gmail" opens compose windows batched 5 at a
+// time (browsers throttle simultaneous popups).
+
+const HEMPHAUS_FROM_NAME  = 'HempHaus';                     // Shown in Gmail as sender name (Gmail picks the actual From address from your logged-in account)
+const HEMPHAUS_POSTAL     = 'HempHaus Inc. · San Antonio, TX 78247 · info@hemphaustx.com · (267) 918-9084';
+// Product line HempHaus wants private-label pricing on
+const HEMPHAUS_LINE = [
+  'CBD full-spectrum tinctures (unflavored + natural)',
+  'CBD/CBG topicals + salves (2oz + 4oz)',
+  'THCA / D9 gummies (compliant hemp-derived)',
+  'CBD softgels + capsules',
+  'CBD-infused honey sticks / mini-pouches',
+].join('; ');
+
+function buildOutreachDraft(lead){
+  const name = (lead.name || 'Wholesale team').trim();
+  const focus = (lead.productsToBuy || '').trim();
+  const stateGuess = ((lead.address||'').match(/,\s*([A-Z]{2})\b/)||[])[1] || '';
+  const focusLine = focus
+    ? `We noticed your line covers ${focus.split(',').slice(0,3).join(',').trim()} — that's the exact category we're building around.`
+    : `We're building a private-label hemp line and you came up in our sourcing research.`;
+  const subject = `HempHaus × ${name} — private-label CBD/CBG line, TX distributor buyer`;
+  const body =
+`Hi ${name} wholesale team,
+
+I'm reaching out from HempHaus Inc., a Texas-based hemp product wholesale distributor. We supply smoke shops, wellness stores, and hospitality retail across TX/FL/PA. Our current supplier lead times pushed us to expand sourcing, and ${stateGuess ? `${stateGuess}-based ` : ''}manufacturers with white-label capacity are top of our list.
+
+${focusLine}
+
+Our private-label line for Q3-Q4 2026 focuses on: ${HEMPHAUS_LINE}.
+
+Three quick questions to see if there's a fit:
+
+  1. Do you offer private-label or contract-manufacturing on your finished-goods line?
+  2. What's your MOQ (per SKU) and typical lead time from PO to ship?
+  3. Do you ship to Texas, and can you provide an ISO-17025 lab COA per lot?
+
+If any of the above is a yes, happy to send our target volume and share our packaging spec. I'm at (267) 918-9084 or reply to this email.
+
+Thanks —
+Ivan Svedov
+HempHaus Inc.
+${HEMPHAUS_POSTAL}
+
+—
+You received this outreach because your company is publicly listed as a licensed hemp wholesale manufacturer. Reply STOP or "REMOVE" and we'll drop you from our sourcing list.`;
+  return { subject, body };
+}
+
+function openGmailForLead(enc){
+  let lead;
+  try { lead = JSON.parse(decodeURIComponent(enc)); } catch(_) { return; }
+  const email = String(lead.email || '').trim();
+  if(!email || !/@/.test(email)){ showToast('No email on file for this supplier — try Website instead','error'); return; }
+  const { subject, body } = buildOutreachDraft(lead);
+  // Gmail compose URL — /mail/?view=cm&fs=1
+  const url = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(email)
+    + '&su=' + encodeURIComponent(subject)
+    + '&body=' + encodeURIComponent(body);
+  window.open(url, '_blank', 'noopener');
+  // Log the outreach on the lead's notes for the audit trail
+  try {
+    const key = bizKey(lead);
+    const n = getNotes(key);
+    n.log = n.log || [];
+    n.log.push({ ts: new Date().toISOString().slice(0,10), text: 'Gmail draft opened (private-label inquiry)', outcome: 'Gmail draft opened' });
+    setNotes(key, n);
+  } catch(_){}
+}
+
+async function openBulkGmail(){
+  const leads = allLeads.filter(l => selectedLeads.has(bizKey(l)));
+  const emailable = leads.filter(l => l.email && /@/.test(l.email));
+  if(!emailable.length){ showToast('None of the selected leads have an email on file','error'); return; }
+  const suppressed = leads.length - emailable.length;
+  if(!confirm(`Open ${emailable.length} Gmail compose tabs${suppressed?` (${suppressed} skipped — no email)`:''}? Browsers throttle so we open 5 at a time; hit OK to keep going after each batch.`)){ return; }
+  for(let i = 0; i < emailable.length; i += 5){
+    const batch = emailable.slice(i, i + 5);
+    batch.forEach(lead => {
+      const enc = encodeURIComponent(JSON.stringify(lead));
+      openGmailForLead(enc);
+    });
+    if(i + 5 < emailable.length){
+      await new Promise(r => setTimeout(r, 700));   // give the browser breathing room
+      if(!confirm(`${Math.min(i+5, emailable.length)}/${emailable.length} tabs opened. Send those in Gmail, then click OK to open the next batch of ${Math.min(5, emailable.length - i - 5)}.`)) break;
+    }
+  }
+  showToast('Bulk outreach queue complete — check the Notes log for each supplier','success');
 }
 </script>
 
