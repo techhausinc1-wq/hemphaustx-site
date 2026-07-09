@@ -117,13 +117,13 @@ select,input[type="text"],input[type="number"]{width:100%;background:var(--bg3);
 select:focus,input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(42,122,66,0.08);}
 .radius-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:13px;}
 .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:4px;}
-.check-item{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:11px;color:var(--text2);padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);transition:all 0.15s;user-select:none;}
-.check-item:hover{border-color:var(--border2);}
-.check-item.checked{border-color:var(--green);background:var(--green-bg);color:var(--text);}
-.check-item input{display:none;}
+.check-item,.toggle-item{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:11px;color:var(--text2);padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);transition:all 0.15s;user-select:none;}
+.check-item:hover,.toggle-item:hover{border-color:var(--border2);}
+.check-item.checked,.toggle-item.checked{border-color:var(--green);background:var(--green-bg);color:var(--text);}
+.check-item input,.toggle-item input{display:none;}
 .check-box{width:14px;height:14px;border:1.5px solid var(--border2);border-radius:3px;flex-shrink:0;display:grid;place-items:center;transition:all 0.15s;}
-.check-item.checked .check-box{background:var(--green);border-color:var(--green);}
-.check-item.checked .check-box::after{content:'✓';font-size:9px;color:white;}
+.check-item.checked .check-box,.toggle-item.checked .check-box{background:var(--green);border-color:var(--green);}
+.check-item.checked .check-box::after,.toggle-item.checked .check-box::after{content:'✓';font-size:9px;color:white;}
 #run-btn{width:100%;padding:13px;background:var(--green);border:none;border-radius:10px;color:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 16px rgba(42,122,66,0.3);}
 #run-btn:hover{background:var(--green2);transform:translateY(-1px);}
 #run-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none;}
@@ -576,7 +576,7 @@ select:focus,input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(42,
   /* Inputs: 16px font-size prevents iOS focus-zoom */
   .gate-input,select,input[type="text"],input[type="number"],textarea,.dm-input,.activity-input,.activity-outcome,.prospect-notes,.notes-textarea,.add-log-input{font-size:16px!important;}
   /* Slightly bigger checkbox items for tap accuracy */
-  .check-item{min-height:44px;padding:11px 13px;font-size:13px;}
+  .check-item,.toggle-item{min-height:44px;padding:11px 13px;font-size:13px;}
   /* Prospects card grid breathes more at iPad widths */
   .prospect-card{padding:18px;}
   /* Modal sized for iPad — not edge-to-edge */
@@ -855,7 +855,8 @@ a.act-btn:hover{text-decoration:none;}
     <span id="mobile-menu-current"></span>
   </button>
   <div class="main-tabs" id="main-tabs">
-    <div class="main-tab active" onclick="switchMainTab('scout')" id="tab-scout">Scout</div>
+    <div class="main-tab active" onclick="switchMainTab('scout')" id="tab-scout">Retail Scout</div>
+    <div class="main-tab" onclick="switchMainTab('wholesale-scout')" id="tab-wholesale-scout">Wholesale Scout</div>
     <div class="main-tab" onclick="switchMainTab('today')" id="tab-today" style="display:none;">Today <span class="tab-badge" id="today-count">0</span></div>
     <div class="main-tab" onclick="switchMainTab('prospects')" id="tab-prospects">Prospects <span class="tab-badge" id="prospects-count">0</span></div>
     <div class="main-tab" onclick="switchMainTab('called')" id="tab-called" style="display:none;">Called <span class="tab-badge" id="called-count">0</span></div>
@@ -902,6 +903,7 @@ a.act-btn:hover{text-decoration:none;}
       <aside class="sidebar">
         <div class="card">
           <div class="card-title">Territory</div>
+          <div id="territory-fields">
           <label class="field-label">State</label>
           <select id="state-select">
             <option value="">— Select State —</option>
@@ -934,10 +936,24 @@ a.act-btn:hover{text-decoration:none;}
             <div><label class="field-label" style="margin-top:0">Radius</label><input type="number" id="radius-input" value="20" min="5" max="150" step="5"/></div>
             <div><label class="field-label" style="margin-top:0">Unit</label><select id="unit-select"><option value="miles">Miles</option><option value="km">Km</option></select></div>
           </div>
+          </div>
+          <div id="nationwide-note" style="display:none;font-size:11px;color:var(--text3);">Nationwide mode — searching all 50 states. Turn off Nationwide in Supplier Options to search a specific ZIP/radius instead.</div>
+        </div>
+        <div class="card" id="wholesale-options-card" style="display:none;">
+          <div class="card-title">Supplier Options</div>
+          <label class="toggle-item checked" id="nationwide-toggle-item"><input type="checkbox" id="nationwide-toggle" checked/><div class="check-box"></div>Nationwide search (ignore territory)</label>
+          <label class="field-label">Supplier Focus</label>
+          <select id="supplier-focus-select">
+            <option value="">All Supplier Categories</option>
+            <option value="cultivator">Cultivators + Farms</option>
+            <option value="extractor">Extractors + Labs</option>
+            <option value="brand">White-Label + Brand Mfrs</option>
+          </select>
+          <label class="toggle-item" id="whitelabel-only-item" style="margin-top:13px;"><input type="checkbox" id="whitelabel-only-toggle"/><div class="check-box"></div>White-label only (outreach ready)</label>
         </div>
         <div class="card">
           <div class="card-title">Target Business Types</div>
-          <div class="check-grid">
+          <div class="check-grid" id="retail-type-checks">
             <label class="check-item checked" data-type="smoke"><input type="checkbox" checked/><div class="check-box"></div>Smoke shops</label>
             <label class="check-item checked" data-type="vape"><input type="checkbox" checked/><div class="check-box"></div>Vape shops</label>
             <label class="check-item checked" data-type="cbd"><input type="checkbox" checked/><div class="check-box"></div>CBD stores</label>
@@ -949,8 +965,8 @@ a.act-btn:hover{text-decoration:none;}
             <label class="check-item" data-type="pet"><input type="checkbox"/><div class="check-box"></div>Pet shops</label>
             <label class="check-item" data-type="pharmacy"><input type="checkbox"/><div class="check-box"></div>Pharmacies</label>
             <label class="check-item" data-type="cstore"><input type="checkbox"/><div class="check-box"></div>Gas / C-Stores</label>
-            <label class="check-item wholesale-item" data-type="wholesale" style="grid-column:1/-1;border-style:dashed;"><input type="checkbox"/><div class="check-box"></div>Commercial Wholesalers (buy-side: cultivators, extractors, distributors)</label>
           </div>
+          <label class="check-item wholesale-item" data-type="wholesale" style="display:none;"><input type="checkbox"/><div class="check-box"></div>Commercial Wholesalers (buy-side: cultivators, extractors, distributors)</label>
         </div>
         <div class="card">
           <div class="card-title">Search Settings</div>
@@ -2661,19 +2677,19 @@ function pitchFor(typeStr){
 
 // ══ QUICK-DISCOVER PRESETS ═══════════════════════════════════════════════════
 const QUICK_PRESETS = [
-  {label:'★ Nationwide Bulk Suppliers', icon:'', nationwide:true, state:'', zip:'', radius:0, types:['wholesale']},
-  {label:'★ Nationwide · Cultivators + Farms', icon:'', nationwide:true, supplierFocus:'cultivator', state:'', zip:'', radius:0, types:['wholesale']},
-  {label:'★ Nationwide · Distillate + Isolate Labs', icon:'', nationwide:true, supplierFocus:'extractor', state:'', zip:'', radius:0, types:['wholesale']},
-  {label:'★ Nationwide · White-Label / Brand Mfrs', icon:'', nationwide:true, supplierFocus:'brand', state:'', zip:'', radius:0, types:['wholesale']},
-  {label:'★ White-Label ONLY (outreach ready)', icon:'', nationwide:true, supplierFocus:'brand', whitelabelOnly:true, state:'', zip:'', radius:0, types:['wholesale']},
-  {label:'San Antonio · Smoke', icon:'', state:'TX', zip:'78230', radius:20, types:['smoke','vape']},
-  {label:'San Antonio · Wellness', icon:'', state:'TX', zip:'78230', radius:20, types:['cbd','wellness','natural']},
-  {label:'San Antonio · All', icon:'', state:'TX', zip:'78230', radius:25, types:['smoke','vape','cbd','wellness','natural']},
-  {label:'Austin · Smoke + Vape', icon:'', state:'TX', zip:'78704', radius:15, types:['smoke','vape']},
-  {label:'Austin · Wellness', icon:'', state:'TX', zip:'78704', radius:15, types:['cbd','wellness','natural']},
-  {label:'Houston · CBD', icon:'', state:'TX', zip:'77002', radius:20, types:['cbd','wellness']},
-  {label:'Dallas · All', icon:'', state:'TX', zip:'75201', radius:20, types:['smoke','vape','cbd','wellness']},
-  {label:'Hollywood FL', icon:'', state:'FL', zip:'33020', radius:20, types:['smoke','vape','cbd']},
+  {label:'★ Nationwide Bulk Suppliers', icon:'', nationwide:true, state:'', zip:'', radius:0, types:['wholesale'], mode:'wholesale'},
+  {label:'★ Nationwide · Cultivators + Farms', icon:'', nationwide:true, supplierFocus:'cultivator', state:'', zip:'', radius:0, types:['wholesale'], mode:'wholesale'},
+  {label:'★ Nationwide · Distillate + Isolate Labs', icon:'', nationwide:true, supplierFocus:'extractor', state:'', zip:'', radius:0, types:['wholesale'], mode:'wholesale'},
+  {label:'★ Nationwide · White-Label / Brand Mfrs', icon:'', nationwide:true, supplierFocus:'brand', state:'', zip:'', radius:0, types:['wholesale'], mode:'wholesale'},
+  {label:'★ White-Label ONLY (outreach ready)', icon:'', nationwide:true, supplierFocus:'brand', whitelabelOnly:true, state:'', zip:'', radius:0, types:['wholesale'], mode:'wholesale'},
+  {label:'San Antonio · Smoke', icon:'', state:'TX', zip:'78230', radius:20, types:['smoke','vape'], mode:'retail'},
+  {label:'San Antonio · Wellness', icon:'', state:'TX', zip:'78230', radius:20, types:['cbd','wellness','natural'], mode:'retail'},
+  {label:'San Antonio · All', icon:'', state:'TX', zip:'78230', radius:25, types:['smoke','vape','cbd','wellness','natural'], mode:'retail'},
+  {label:'Austin · Smoke + Vape', icon:'', state:'TX', zip:'78704', radius:15, types:['smoke','vape'], mode:'retail'},
+  {label:'Austin · Wellness', icon:'', state:'TX', zip:'78704', radius:15, types:['cbd','wellness','natural'], mode:'retail'},
+  {label:'Houston · CBD', icon:'', state:'TX', zip:'77002', radius:20, types:['cbd','wellness'], mode:'retail'},
+  {label:'Dallas · All', icon:'', state:'TX', zip:'75201', radius:20, types:['smoke','vape','cbd','wellness'], mode:'retail'},
+  {label:'Hollywood FL', icon:'', state:'FL', zip:'33020', radius:20, types:['smoke','vape','cbd'], mode:'retail'},
 ];
 
 // ══ TODAY / CALLED / COMMISSIONS STATE ═══════════════════════════════════════
@@ -2764,7 +2780,7 @@ function checkAccess(){
  loadTodayState();
  refreshTodayBadge();
  refreshCalledBadge();
- renderQuickDiscover();
+ applyScoutTabMode('retail');
  checkResumeBanner();
     // Everyone (master, director, rep) lands on Scout — the natural home page.
     // Director and reps still see Today / Called / Commissions / etc. via the tab bar.
@@ -3470,6 +3486,7 @@ function quickAddToToday(leadJson){
 window._scoutNationwide = false;
 window._scoutSupplierFocus = null;   // 'cultivator' | 'extractor' | 'brand' | null (all)
 window._scoutWhitelabelOnly = false; // if true, filter results to whitelabel=yes/maybe
+function clearNationwideFlags(){ window._scoutNationwide = false; window._scoutSupplierFocus = null; }
 function runQuickPreset(idx){
  const preset = QUICK_PRESETS[idx]; if(!preset) return;
  window._scoutNationwide = !!preset.nationwide;
@@ -3510,10 +3527,71 @@ function runQuickPreset(idx){
  setTimeout(()=>{ const btn=document.getElementById('run-btn'); if(btn && !btn.disabled) btn.click(); }, 300);
 }
 
+let scoutActiveMode = 'retail';   // 'retail' | 'wholesale' — which Scout tab is currently showing
 function renderQuickDiscover(){
  const el = document.getElementById('quick-discover-chips');
  if(!el) return;
- el.innerHTML = QUICK_PRESETS.map((p,i)=>`<button class="qd-chip" onclick="runQuickPreset(${i})">${esc(p.label)}</button>`).join('');
+ el.innerHTML = QUICK_PRESETS.map((p,i)=>p.mode===scoutActiveMode?`<button class="qd-chip" onclick="runQuickPreset(${i})">${esc(p.label)}</button>`:'').join('');
+}
+
+// ══ RETAIL / WHOLESALE SCOUT TAB MODE ═════════════════════════════════════════
+// Both the "Retail Scout" and "Wholesale Scout" nav tabs point at the same
+// #view-scout container and the same underlying form controls (runAgent()
+// reads them directly by id). This function shows/hides the sections that
+// differ between the two modes and drives the hidden `wholesale` checkbox
+// programmatically so runAgent()'s existing checkedTypes.includes('wholesale')
+// logic keeps working unmodified.
+let _lastRetailTypes = null;   // preserves checkbox state across Retail<->Wholesale tab switches
+function applyScoutTabMode(mode){
+ scoutActiveMode = mode;
+ const retailChecks = document.getElementById('retail-type-checks');
+ const wsCard = document.getElementById('wholesale-options-card');
+ const wholesaleItem = document.querySelector('.check-item.wholesale-item');
+ const wholesaleCb = wholesaleItem ? wholesaleItem.querySelector('input') : null;
+ const territoryFields = document.getElementById('territory-fields');
+ const nationwideNote = document.getElementById('nationwide-note');
+ if(mode==='wholesale'){
+   if(retailChecks){
+     // Remember which retail types were checked so switching back to Retail
+     // Scout restores them — otherwise every visit to Wholesale Scout would
+     // silently wipe the user's retail type selections.
+     if(_lastRetailTypes===null){
+       _lastRetailTypes = [...retailChecks.querySelectorAll('.check-item.checked')].map(el=>el.dataset.type);
+     }
+     retailChecks.style.display='none';
+     retailChecks.querySelectorAll('.check-item').forEach(el=>{ el.classList.remove('checked'); const cb=el.querySelector('input'); if(cb) cb.checked=false; });
+   }
+   if(wsCard) wsCard.style.display='';
+   if(wholesaleItem) wholesaleItem.classList.add('checked');
+   if(wholesaleCb) wholesaleCb.checked=true;
+   const nwToggle = document.getElementById('nationwide-toggle');
+   const nationwideOn = nwToggle ? nwToggle.checked : true;
+   window._scoutNationwide = nationwideOn;
+   window._scoutSupplierFocus = document.getElementById('supplier-focus-select').value || null;
+   window._scoutWhitelabelOnly = document.getElementById('whitelabel-only-toggle').checked;
+   if(territoryFields) territoryFields.style.display = nationwideOn ? 'none' : '';
+   if(nationwideNote) nationwideNote.style.display = nationwideOn ? '' : 'none';
+ } else {
+   if(retailChecks){
+     retailChecks.style.display='';
+     if(_lastRetailTypes!==null){
+       retailChecks.querySelectorAll('.check-item').forEach(el=>{
+         const want = _lastRetailTypes.includes(el.dataset.type);
+         el.classList.toggle('checked', want);
+         const cb=el.querySelector('input'); if(cb) cb.checked=want;
+       });
+       _lastRetailTypes = null;
+     }
+   }
+   if(wsCard) wsCard.style.display='none';
+   if(wholesaleItem) wholesaleItem.classList.remove('checked');
+   if(wholesaleCb) wholesaleCb.checked=false;
+   clearNationwideFlags();
+   window._scoutWhitelabelOnly = false;
+   if(territoryFields) territoryFields.style.display='';
+   if(nationwideNote) nationwideNote.style.display='none';
+ }
+ renderQuickDiscover();
 }
 
 // ══ MAIN TAB SWITCHING ════════════════════════════════════════════════════════
@@ -3543,12 +3621,19 @@ function setCommRate(code, field, val){
  showToast(`Updated ${ROLE_MAP[code].name}: ${field==='pct'?'base':'bonus'} ${val}%`,'success');
 }
 function switchMainTab(tab){
-  ['scout','today','prospects','called','commissions','manual','products','orders','admin'].forEach(id=>{
+  ['today','prospects','called','commissions','manual','products','orders','admin'].forEach(id=>{
  const v=document.getElementById('view-'+id);
  const t=document.getElementById('tab-'+id);
  if(v) v.style.display=tab===id?'':'none';
  if(t) t.classList.toggle('active',tab===id);
   });
+  // "Retail Scout" (tab id 'scout') and "Wholesale Scout" (tab id 'wholesale-scout')
+  // share the single #view-scout container and its form controls.
+ const scoutView=document.getElementById('view-scout');
+ if(scoutView) scoutView.style.display=(tab==='scout'||tab==='wholesale-scout')?'':'none';
+ const tabScout=document.getElementById('tab-scout'); if(tabScout) tabScout.classList.toggle('active',tab==='scout');
+ const tabWholesaleScout=document.getElementById('tab-wholesale-scout'); if(tabWholesaleScout) tabWholesaleScout.classList.toggle('active',tab==='wholesale-scout');
+ if(tab==='scout'||tab==='wholesale-scout') applyScoutTabMode(tab==='wholesale-scout'?'wholesale':'retail');
  if(tab==='prospects') renderProspects();
  if(tab==='orders') renderOrders();
  if(tab==='admin') renderAdmin();
@@ -3694,7 +3779,7 @@ function addSelectedToProspects(){
 // sync the ".checked" class from the resulting input state via the change event.
 // Manually flipping cb.checked here on click double-toggled with the browser default,
 // leaving input.checked opposite of the visual class.
-document.querySelectorAll('.check-item').forEach(item=>{
+document.querySelectorAll('.check-item,.toggle-item').forEach(item=>{
  const cb = item.querySelector('input');
  if(!cb) return;
  // Initial sync — some items start `checked` in markup
@@ -3705,13 +3790,28 @@ document.getElementById('state-select').addEventListener('change',function(){
  const zip=this.options[this.selectedIndex].getAttribute('data-zip');
  if(zip) document.getElementById('zip-input').value=zip;
  // Manual geo change → clear the nationwide flag so runAgent uses the geo-bounded prompt
- window._scoutNationwide = false;
- window._scoutSupplierFocus = null;
+ clearNationwideFlags();
 });
 // Same reset when Ivan hand-types a ZIP or radius
 ['zip-input','radius-input'].forEach(id=>{
  const el = document.getElementById(id);
- if(el) el.addEventListener('input',()=>{ window._scoutNationwide = false; window._scoutSupplierFocus = null; });
+ if(el) el.addEventListener('input',clearNationwideFlags);
+});
+// Wholesale Scout — Supplier Options card controls (Nationwide toggle / Supplier
+// Focus / White-label only). Only visible+relevant on the Wholesale Scout tab;
+// applyScoutTabMode() drives the initial/reset state, these just handle live edits.
+document.getElementById('nationwide-toggle').addEventListener('change',function(){
+ window._scoutNationwide = this.checked;
+ const territoryFields=document.getElementById('territory-fields');
+ const nationwideNote=document.getElementById('nationwide-note');
+ if(territoryFields) territoryFields.style.display = this.checked ? 'none' : '';
+ if(nationwideNote) nationwideNote.style.display = this.checked ? '' : 'none';
+});
+document.getElementById('supplier-focus-select').addEventListener('change',function(){
+ window._scoutSupplierFocus = this.value || null;
+});
+document.getElementById('whitelabel-only-toggle').addEventListener('change',function(){
+ window._scoutWhitelabelOnly = this.checked;
 });
 document.querySelectorAll('.filter-btn').forEach(btn=>{
  btn.addEventListener('click',()=>{
@@ -4505,13 +4605,19 @@ async function runAgent(){
  } else {
    // Legacy single-shot geo-bounded scan
    const budgets = checkedTypes.length<=2 ? [6, 3] : checkedTypes.length<=4 ? [5, 3] : [4, 2];
+   // Scale the response budget with how many leads were actually requested — a
+   // flat 8000 sized for Quick Scan (10-15) silently truncates Deep Dive
+   // (35-50) requests with no recovery beyond parseLeads' best-effort fallback.
+   // Capped at 8000, the standard ceiling for this model without requesting
+   // extended output.
+   const scanMaxTokens = Math.min(8000, 1500 + depth*130);
    let finalText = '';
    for(let attempt = 0; attempt < budgets.length; attempt++){
      const searchBudget = budgets[attempt];
      const attemptLabel = attempt === 0 ? '' : ` (retry with ${searchBudget} searches after a network drop)`;
      log(`Scanning${attemptLabel}…`,'search');
      try {
-       const res = await fetchWithRetry(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},timeoutMs:90000,body:JSON.stringify({_accessCode:WORKER_AUTH,model:'claude-haiku-4-5-20251001',max_tokens:8000,system:systemPrompt,tools:[{type:'web_search_20250305',name:'web_search',max_uses:searchBudget}],messages:[{role:'user',content:userAsk}]})});
+       const res = await fetchWithRetry(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},timeoutMs:90000,body:JSON.stringify({_accessCode:WORKER_AUTH,model:'claude-haiku-4-5-20251001',max_tokens:scanMaxTokens,system:systemPrompt,tools:[{type:'web_search_20250305',name:'web_search',max_uses:searchBudget}],messages:[{role:'user',content:userAsk}]})});
        if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||`HTTP ${res.status}`);}
        const data=await res.json();if(data.error)throw new Error(data.error.message);
        finalText='';
