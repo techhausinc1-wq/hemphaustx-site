@@ -725,6 +725,26 @@ main.today-view, main.called-view, main.commissions-view {padding:20px 0 48px;}
   .comm-table-row{padding:14px 16px;border-bottom:1px solid var(--border);}
 }
 
+/* Order tracker table */
+.ord-table{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+.ord-table-head{display:grid;grid-template-columns:90px 1.3fr 1.5fr 100px 110px 190px;gap:12px;padding:11px 18px;background:var(--bg3);font-family:'Inter',sans-serif;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;border-bottom:1px solid var(--border);}
+.ord-table-row{display:grid;grid-template-columns:90px 1.3fr 1.5fr 100px 110px 190px;gap:12px;padding:13px 18px;font-size:13px;color:var(--text);border-bottom:1px solid var(--border);align-items:center;}
+.ord-table-row:last-child{border-bottom:none;}
+.ord-table-row:hover{background:var(--bg3);}
+.order-status{display:inline-block;padding:3px 9px;border-radius:20px;font-family:'Inter',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;}
+.order-status.pending{background:var(--amber-bg);color:var(--amber);}
+.order-status.ordered{background:var(--blue-bg);color:var(--blue);}
+.order-status.shipped{background:var(--blue-bg);color:var(--blue);}
+.order-status.received{background:var(--green-bg);color:var(--green);}
+.order-status.sold{background:var(--bg3);color:var(--text2);}
+@media(max-width:900px){
+  .ord-table-head,.ord-table-row{grid-template-columns:1fr;gap:5px;}
+  .ord-table-head{display:none;}
+  .ord-table-row{padding:14px 16px;border-bottom:1px solid var(--border);}
+}
+.ord-item-row{display:grid;grid-template-columns:1fr 70px 90px 30px;gap:8px;margin-bottom:8px;align-items:center;}
+.ord-item-row input{font-family:'Inter',sans-serif;font-size:12px;padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg3);color:var(--text);outline:none;}
+
 /* Order-close modal */
 .oc-modal-body{padding:22px 24px;}
 .oc-field{margin-bottom:14px;}
@@ -2429,14 +2449,177 @@ async function fetchWithRetry(url, options = {}, maxAttempts = 2) {
   throw new Error(msg);
 }
 
-// ══ FUNCTION STUBS — features wired in UI but not yet implemented ═══════════
-// (Suppresses ReferenceError on click. Replace with real implementations later.)
+// ══ ORDER TRACKER — supplier POs (Hempyre, packaging vendors) from placement to sell-through ══
+function orderTotal(o){ return (o.items||[]).reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.cost)||0), 0); }
 function renderOrders(){
-  const el = document.querySelector('#view-orders');
-  if(!el) return;
-  el.innerHTML = '<div style="max-width:1320px;margin:0 auto;padding:40px 24px;text-align:center;color:var(--text3);"><div style="font-family:Inter,sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px;">Orders</div><div style="font-size:13px;line-height:1.6;max-width:480px;margin:0 auto;">Outbound purchase orders to suppliers (Hempyre, packaging vendors) and retailer wholesale orders will live here. Next session — currently a stub.</div></div>';
+  const container = document.getElementById('orders-container');
+  const statsEl = document.getElementById('order-stats');
+  if(!container || !statsEl) return;
+
+  const byStatus = s => orders.filter(o=>o.status===s);
+  const sumStatus = s => byStatus(s).reduce((s2,o)=>s2+orderTotal(o),0);
+  const open = [...byStatus('pending'), ...byStatus('ordered')];
+  const openTotal = open.reduce((s,o)=>s+orderTotal(o),0);
+  const transitTotal = sumStatus('shipped');
+  const onHandTotal = sumStatus('received');
+  const lifetimeTotal = orders.reduce((s,o)=>s+orderTotal(o),0);
+
+  statsEl.innerHTML = `
+    <div class="comm-stat"><div class="comm-stat-label">Open Orders</div><div class="comm-stat-amt">${fmtMoney(openTotal)}</div><div class="comm-stat-sub">${open.length} pending / ordered</div></div>
+    <div class="comm-stat pending"><div class="comm-stat-label">In Transit</div><div class="comm-stat-amt">${fmtMoney(transitTotal)}</div><div class="comm-stat-sub">${byStatus('shipped').length} shipped</div></div>
+    <div class="comm-stat earned"><div class="comm-stat-label">On Hand</div><div class="comm-stat-amt">${fmtMoney(onHandTotal)}</div><div class="comm-stat-sub">${byStatus('received').length} received</div></div>
+    <div class="comm-stat paid"><div class="comm-stat-label">Lifetime Spend</div><div class="comm-stat-amt">${fmtMoney(lifetimeTotal)}</div><div class="comm-stat-sub">${orders.length} total orders</div></div>
+  `;
+
+  const filter = document.getElementById('order-filter')?.value || 'all';
+  const rows = (filter==='all' ? orders : orders.filter(o=>o.status===filter)).slice()
+    .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+
+  if(!rows.length){
+    container.innerHTML = `
+      <div style="padding:48px;text-align:center;color:var(--text3);">
+        <div style="font-family:'Inter',sans-serif;font-size:17px;color:var(--text2);margin-bottom:6px;">No orders yet</div>
+        <div style="font-size:12px;">Click + New Order to track supplier orders, sales orders, and fulfillments.</div>
+      </div>`;
+    return;
+  }
+
+  const headerRow = `<div class="ord-table-head"><div>Date</div><div>Supplier / PO</div><div>Items</div><div style="text-align:right;">Total</div><div>Status</div><div>Actions</div></div>`;
+  container.innerHTML = `<div class="ord-table">${headerRow}${rows.map(o=>{
+    const total = orderTotal(o);
+    const itemSummary = (o.items||[]).map(it=>`${it.name}${it.qty?` ×${it.qty}`:''}`).join(', ') || '—';
+    const flowIdx = ORDER_STATUS_FLOW.indexOf(o.status);
+    const nextStatus = flowIdx>=0 && flowIdx<ORDER_STATUS_FLOW.length-1 ? ORDER_STATUS_FLOW[flowIdx+1] : null;
+    return `<div class="ord-table-row">
+      <div style="font-family:'Inter',sans-serif;font-size:12px;color:var(--text2);">${esc(o.orderDate||'')}</div>
+      <div>
+        <div style="font-weight:600;color:var(--text);">${esc(o.supplier||'(no supplier)')}</div>
+        ${o.po?`<div style="font-size:11px;color:var(--text3);">PO ${esc(o.po)}</div>`:''}
+      </div>
+      <div style="font-size:12px;color:var(--text2);">${esc(itemSummary)}</div>
+      <div class="comm-amt" style="text-align:right;">${fmtMoney(total)}</div>
+      <div><span class="order-status ${esc(o.status)}">${esc(ORDER_STATUS_LABELS[o.status]||o.status)}</span></div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;">
+        ${nextStatus?`<button class="comm-action" onclick="setOrderStatus('${o.id}','${nextStatus}')">Mark ${esc(ORDER_STATUS_LABELS[nextStatus])}</button>`:''}
+        <button class="comm-action" onclick="openOrderModal('${o.id}')">Edit</button>
+        <button class="comm-action" onclick="printOrder('${o.id}')">Print</button>
+        <button class="comm-action danger" onclick="deleteOrder('${o.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
 }
-function openOrderModal(){ alert('Order creation modal coming next session. Use the Hempyre PO file on Desktop for the immediate purchase order.'); }
+
+let ordCurrentId = null;
+let ordItems = [];
+function openOrderModal(id){
+  ordCurrentId = id || null;
+  const existing = id ? orders.find(o=>o.id===id) : null;
+  document.getElementById('order-modal-title').textContent = existing ? 'Edit order' : 'New order';
+  document.getElementById('ord-supplier').value = existing?.supplier || '';
+  document.getElementById('ord-po').value = existing?.po || '';
+  document.getElementById('ord-status').value = existing?.status || 'pending';
+  document.getElementById('ord-date').value = existing?.orderDate || todayDateStamp();
+  document.getElementById('ord-expected').value = existing?.expectedDate || '';
+  document.getElementById('ord-notes').value = existing?.notes || '';
+  ordItems = existing ? JSON.parse(JSON.stringify(existing.items||[])) : [{name:'',qty:1,cost:0}];
+  renderOrdItems();
+  document.getElementById('order-modal').style.display = 'flex';
+}
+function closeOrderModal(){
+  document.getElementById('order-modal').style.display = 'none';
+  ordCurrentId = null;
+  ordItems = [];
+}
+function renderOrdItems(){
+  const wrap = document.getElementById('ord-items-wrap');
+  wrap.innerHTML = ordItems.map((it,i)=>`
+    <div class="ord-item-row">
+      <input type="text" placeholder="Item — e.g. 1g THCP pre-roll" value="${esc(it.name)}" oninput="ordItems[${i}].name=this.value">
+      <input type="number" min="0" step="1" placeholder="Qty" value="${it.qty}" oninput="ordItems[${i}].qty=this.value;recalcOrdTotal();">
+      <input type="number" min="0" step="0.01" placeholder="Unit cost" value="${it.cost}" oninput="ordItems[${i}].cost=this.value;recalcOrdTotal();">
+      <button type="button" class="comm-action danger" onclick="removeOrdItem(${i})" ${ordItems.length<=1?'disabled':''}>×</button>
+    </div>
+  `).join('');
+  recalcOrdTotal();
+}
+function addOrdItem(){ ordItems.push({name:'',qty:1,cost:0}); renderOrdItems(); }
+function removeOrdItem(i){ if(ordItems.length<=1) return; ordItems.splice(i,1); renderOrdItems(); }
+function recalcOrdTotal(){
+  const total = ordItems.reduce((s,it)=>s+(Number(it.qty)||0)*(Number(it.cost)||0),0);
+  const el = document.getElementById('ord-total-amt');
+  if(el) el.textContent = fmtMoney(total);
+}
+function submitOrder(){
+  const supplier = document.getElementById('ord-supplier').value.trim();
+  if(!supplier){ alert('Enter a supplier name.'); return; }
+  const items = ordItems.filter(it=>it.name && it.name.trim()).map(it=>({name:it.name.trim(), qty:Number(it.qty)||0, cost:Number(it.cost)||0}));
+  if(!items.length){ alert('Add at least one item.'); return; }
+  const now = new Date();
+  if(ordCurrentId){
+    const existing = orders.find(o=>o.id===ordCurrentId);
+    if(existing){
+      existing.supplier = supplier;
+      existing.po = document.getElementById('ord-po').value.trim();
+      existing.status = document.getElementById('ord-status').value;
+      existing.orderDate = document.getElementById('ord-date').value || todayDateStamp();
+      existing.expectedDate = document.getElementById('ord-expected').value || '';
+      existing.notes = document.getElementById('ord-notes').value.trim();
+      existing.items = items;
+    }
+  } else {
+    orders.push({
+      id: 'ord-'+now.getTime()+'-'+Math.random().toString(36).slice(2,6),
+      supplier,
+      po: document.getElementById('ord-po').value.trim(),
+      status: document.getElementById('ord-status').value,
+      orderDate: document.getElementById('ord-date').value || todayDateStamp(),
+      expectedDate: document.getElementById('ord-expected').value || '',
+      receivedDate: null,
+      items,
+      notes: document.getElementById('ord-notes').value.trim(),
+      createdBy: accessCode,
+      createdByName: (window.currentUser||{}).name || 'Unknown',
+      createdAt: now.toISOString(),
+    });
+  }
+  saveOrders();
+  closeOrderModal();
+  renderOrders();
+  showToast(`Order ${ordCurrentId?'updated':'saved'}: ${supplier}`,'success');
+}
+function setOrderStatus(id, status){
+  const o = orders.find(o=>o.id===id); if(!o) return;
+  o.status = status;
+  if(status==='received') o.receivedDate = todayDateStamp();
+  saveOrders();
+  renderOrders();
+  showToast(`${o.supplier} → ${ORDER_STATUS_LABELS[status]}`,'success');
+}
+function deleteOrder(id){
+  const o = orders.find(o=>o.id===id); if(!o) return;
+  if(!confirm(`Delete this order from ${o.supplier}? This can't be undone.`)) return;
+  orders = orders.filter(o=>o.id!==id);
+  saveOrders();
+  renderOrders();
+  showToast('Order deleted','success');
+}
+function printOrder(id){
+  const o = orders.find(o=>o.id===id); if(!o) return;
+  const rows = (o.items||[]).map(it=>`<tr><td style="padding:6px 10px;border-bottom:1px solid #ddd;">${escHtml(it.name)}</td><td style="padding:6px 10px;border-bottom:1px solid #ddd;text-align:right;">${it.qty}</td><td style="padding:6px 10px;border-bottom:1px solid #ddd;text-align:right;">${fmtMoney(it.cost)}</td><td style="padding:6px 10px;border-bottom:1px solid #ddd;text-align:right;">${fmtMoney((Number(it.qty)||0)*(Number(it.cost)||0))}</td></tr>`).join('');
+  const w = window.open('', '_blank');
+  if(!w){ alert('Popup blocked. Allow popups for this site to print the order.'); return; }
+  w.document.write(`<!doctype html><html><head><title>Purchase order · ${escHtml(o.supplier)}</title><style>body{font-family:Inter,Arial,sans-serif;max-width:640px;margin:30px auto;padding:0 20px;color:#222;}table{width:100%;border-collapse:collapse;margin-top:16px;}th{text-align:left;padding:6px 10px;border-bottom:2px solid #222;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;}</style></head><body>
+    <h1 style="font-size:22px;margin-bottom:4px;">Purchase Order</h1>
+    <div style="color:#777;font-size:12px;margin-bottom:20px;">${o.po?`PO ${escHtml(o.po)} · `:''}${escHtml(o.orderDate||'')} · printed ${new Date().toLocaleString()}</div>
+    <div><strong>Supplier:</strong> ${escHtml(o.supplier)}</div>
+    ${o.expectedDate?`<div><strong>Expected:</strong> ${escHtml(o.expectedDate)}</div>`:''}
+    <table><thead><tr><th>Item</th><th style="text-align:right;">Qty</th><th style="text-align:right;">Unit cost</th><th style="text-align:right;">Line total</th></tr></thead><tbody>${rows}</tbody></table>
+    <div style="text-align:right;font-size:16px;font-weight:700;margin-top:12px;">Total: ${fmtMoney(orderTotal(o))}</div>
+    ${o.notes?`<div style="margin-top:20px;font-size:12px;color:#555;"><strong>Notes:</strong> ${escHtml(o.notes)}</div>`:''}
+  </body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(), 500);
+}
 function printRouteSheet(){
   // Build a printable route sheet from todayQueue
   const q = (typeof todayQueue !== 'undefined' && todayQueue.length) ? todayQueue : [];
@@ -2461,7 +2644,7 @@ function printRouteSheet(){
 // body level — getElementById() still finds them, switchMainTab() still works.
 (function liftBrokenViewsToBody(){
  const lift = () => {
-    ['view-today','view-called','view-commissions','oc-modal','scan-modal','view-orders','view-admin','view-products','outreach-overlay','notes-overlay','modal-overlay'].forEach(id=>{
+    ['view-today','view-called','view-commissions','oc-modal','order-modal','scan-modal','view-orders','view-admin','view-products','outreach-overlay','notes-overlay','modal-overlay'].forEach(id=>{
  const el = document.getElementById(id);
  if(el && el.parentElement && el.parentElement.tagName !== 'BODY'){
  document.body.appendChild(el);
@@ -2681,10 +2864,14 @@ const TODAY_KEY = 'hh_today_queue';
 const CALLED_KEY = 'hh_called_log';
 const COMM_KEY = 'hh_commissions';
 const COMM_RATES_KEY = 'hh_comm_rates';   // {accessCode: {pct, bonusPct}}
+const ORDERS_KEY = 'hh_orders';
 let todayQueue = [];   // array of prospect keys (strings)
 let calledLog = [];    // [{prospectKey, name, type, outcome, note, ts, isoDate, by}]
 let commissions = [];  // [{id, prospectKey, prospectName, closedBy, orderDate, orderTotal, commissionPct, bonusPct, commissionAmt, status, paidDate, notes, po, createdBy, createdAt}]
 let commRates = {};    // overrides ROLE_MAP commission %; editable by master in Admin
+let orders = [];        // [{id, supplier, po, status, orderDate, expectedDate, receivedDate, items:[{name,qty,cost}], total, notes, createdBy, createdByName, createdAt}]
+const ORDER_STATUS_LABELS = {pending:'Pending', ordered:'Ordered', shipped:'Shipped', received:'Received', sold:'Sold'};
+const ORDER_STATUS_FLOW = ['pending','ordered','shipped','received','sold'];
 
 function todayDateStamp(){ return new Date().toISOString().slice(0,10); }
 
@@ -2708,11 +2895,13 @@ function loadTodayState(){
   }catch(e){ calledLog=[]; }
  try{ commissions = JSON.parse(localStorage.getItem(COMM_KEY)||'[]'); }catch(e){ commissions=[]; }
  try{ commRates = JSON.parse(localStorage.getItem(COMM_RATES_KEY)||'{}'); }catch(e){ commRates={}; }
+ try{ orders = JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]'); }catch(e){ orders=[]; }
 }
 function saveTodayQueue(){ localStorage.setItem(TODAY_KEY, JSON.stringify(todayQueue)); refreshTodayBadge(); }
 function saveCalledLog(){ localStorage.setItem(CALLED_KEY, JSON.stringify({day:todayDateStamp(), entries:calledLog})); refreshCalledBadge(); }
 function saveCommissions(){ localStorage.setItem(COMM_KEY, JSON.stringify(commissions)); }
 function saveCommRates(){ localStorage.setItem(COMM_RATES_KEY, JSON.stringify(commRates)); }
+function saveOrders(){ localStorage.setItem(ORDERS_KEY, JSON.stringify(orders)); }
 
 function refreshTodayBadge(){ const el=document.getElementById('today-count'); if(el) el.textContent=todayQueue.length; }
 function refreshCalledBadge(){ const el=document.getElementById('called-count'); if(el) el.textContent=calledLog.length; }
@@ -4913,6 +5102,69 @@ document.getElementById('coach-input').addEventListener('keydown',e=>{if(e.key==
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
         <button class="hdr-btn" onclick="closeOrderCloseModal()">Cancel</button>
         <button class="hdr-btn green" onclick="confirmOrderClose()" style="font-size:11px;padding:9px 18px;">Lock the order</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUPPLIER ORDER MODAL -->
+<datalist id="order-supplier-list">
+  <option value="Hempyre (San Antonio, TX)"></option>
+  <option value="Packaging vendor"></option>
+</datalist>
+<div class="modal-overlay" id="order-modal" onclick="if(event.target===this)closeOrderModal()" style="display:none;position:fixed;inset:0;background:rgba(20,30,20,0.6);z-index:998;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:var(--white);border-radius:16px;max-width:560px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.3);overflow:hidden;max-height:90vh;overflow-y:auto;">
+    <div style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-family:'Inter',sans-serif;font-size:17px;font-weight:700;color:var(--text);" id="order-modal-title">New order</div>
+      <button onclick="closeOrderModal()" style="background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;line-height:1;">×</button>
+    </div>
+    <div class="oc-modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="oc-field">
+          <label class="oc-label">Supplier</label>
+          <input type="text" id="ord-supplier" list="order-supplier-list" placeholder="e.g. Hempyre" style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text);font-size:13px;outline:none;">
+        </div>
+        <div class="oc-field">
+          <label class="oc-label">PO / reference # <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+          <input type="text" id="ord-po" placeholder="e.g. HH-PO-2026-001" style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text);font-size:13px;outline:none;">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+        <div class="oc-field">
+          <label class="oc-label">Status</label>
+          <select id="ord-status" style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text);font-size:13px;outline:none;">
+            <option value="pending">Pending</option>
+            <option value="ordered">Ordered</option>
+            <option value="shipped">Shipped</option>
+            <option value="received">Received</option>
+            <option value="sold">Sold</option>
+          </select>
+        </div>
+        <div class="oc-field">
+          <label class="oc-label">Order date</label>
+          <input type="date" id="ord-date" style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text);font-size:13px;outline:none;">
+        </div>
+        <div class="oc-field">
+          <label class="oc-label">Expected <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+          <input type="date" id="ord-expected" style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text);font-size:13px;outline:none;">
+        </div>
+      </div>
+      <div class="oc-field">
+        <label class="oc-label">Items</label>
+        <div id="ord-items-wrap"></div>
+        <button type="button" class="comm-action" onclick="addOrdItem()">+ Add item</button>
+      </div>
+      <div class="oc-calc-row">
+        <div class="oc-calc-label">Order total</div>
+        <div class="oc-calc-amt" id="ord-total-amt">$0.00</div>
+      </div>
+      <div class="oc-field">
+        <label class="oc-label">Notes <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+        <textarea id="ord-notes" placeholder="Shipping details, follow-up actions..." style="width:100%;min-height:64px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);resize:vertical;"></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+        <button class="hdr-btn" onclick="closeOrderModal()">Cancel</button>
+        <button class="hdr-btn green" onclick="submitOrder()" style="font-size:11px;padding:9px 18px;">Save order</button>
       </div>
     </div>
   </div>
