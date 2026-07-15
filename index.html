@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0a0a0a">
-  <title>HempHaus Inc. — Pure. Uncompromised. CBD-infused organic salve.</title>
-  <meta name="description" content="HempHaus broad-spectrum CBD-infused salve in three strengths. Organic shea butter, cocoa butter, Texas beeswax, jojoba oil, essential oil blend. Made in Texas. COA on every batch.">
-  <meta property="og:title" content="HempHaus — Pure. Uncompromised.">
-  <meta property="og:description" content="Broad-spectrum CBD salve in three strengths. Organic ingredients, Texas beeswax, third-party lab tested.">
+  <title>HempHaus Inc. — Pure. Uncompromised. Wholesale Hemp-Derived Products.</title>
+  <meta name="description" content="HempHaus Inc. supplies licensed retailers with hemp-derived products — broad-spectrum CBD salve and THCP live resin crumble concentrates, with more on the way. Organic ingredients, lab-tested every batch. Wholesale only.">
+  <meta property="og:title" content="HempHaus Inc. — Pure. Uncompromised.">
+  <meta property="og:description" content="Wholesale hemp-derived products for licensed retailers. CBD salve, THCP concentrates, lab-tested every batch.">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="images/icon-180.png">
   <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
@@ -302,6 +302,44 @@
       margin: 12px; top: 0; left: 0;
     }
 
+    /* === Product line router === */
+    .router-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 26px;
+      margin-top: 10px;
+    }
+    .router-card {
+      display: block;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 36px 30px;
+      text-align: center;
+      text-decoration: none;
+      transition: all 200ms;
+    }
+    .router-card:hover { border-color: var(--gold-deep); box-shadow: var(--shadow); transform: translateY(-4px); }
+    .router-card .rc-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; letter-spacing: 3px;
+      color: var(--gold); text-transform: uppercase;
+      margin: 0 0 10px;
+    }
+    .router-card h3 {
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 24px; font-weight: 500;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--cream);
+      margin: 0 0 12px;
+    }
+    .router-card p:not(.rc-eyebrow) { color: var(--cream-dim); font-size: 14px; margin: 0 0 20px; }
+    .router-card .rc-cta {
+      display: inline-block;
+      color: var(--gold); font-weight: 700; font-size: 12px;
+      letter-spacing: 1.5px; text-transform: uppercase;
+    }
+
     /* === Two-column feature blocks === */
     .feature-grid {
       display: grid;
@@ -334,7 +372,17 @@
       background: var(--bg-2);
       text-align: center;
     }
-    .ingredient .ic { font-size: 32px; margin-bottom: 10px; }
+    .ingredient .ic {
+      width: 44px; height: 44px;
+      margin: 0 auto 14px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--gold-deep);
+      border-radius: 50%;
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 13px; font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--gold);
+    }
     .ingredient .nm {
       font-family: 'Cinzel', serif;
       font-size: 15px; font-weight: 500;
@@ -547,14 +595,14 @@
   <div class="wrap inner">
     <a href="#top" class="brand">
       <img src="images/logo.png" class="brand-mark" alt="HempHaus" width="44" height="44">
-      <span class="brand-text">HEMPHAUS<span class="inc">INC</span></span>
+      <span class="brand-text">HEMPHAUS<span class="inc">INC.</span></span>
     </a>
     <nav>
       <a href="#products">Salve</a>
       <a href="#concentrates">Concentrates</a>
       <a href="#ingredients">Ingredients</a>
       <a href="#faq">FAQ</a>
-      <a href="#contact" class="nav-cta">Order</a>
+      <a href="#contact" class="nav-cta">Wholesale Inquiry</a>
     </nav>
   </div>
 </header>
@@ -565,24 +613,47 @@
   <div class="wrap">
     <img src="images/logo.png" class="hero-mark" alt="HempHaus Inc." width="220" height="220">
     <p class="arch">Pure. Uncompromised.</p>
-    <p class="sub">Broad-Spectrum CBD · Organic · Made in Texas</p>
-    <h1 class="lede">CBD-infused salve, in three strengths,<br>built on a foundation of ingredients you can read.</h1>
+    <p class="sub">Hemp-Derived Products · Wholesale to Licensed Retailers</p>
+    <h1 class="lede">One standard across everything we carry:<br>ingredients and compliance you can verify — not just claims.</h1>
     <div class="cta-row">
-      <a href="#products" class="btn primary">Shop the salves</a>
-      <a href="#concentrates" class="btn gold">THCP Concentrates · Wholesale</a>
-      <a href="#ingredients" class="btn">See the ingredients</a>
+      <a href="#contact" class="btn primary">Request Wholesale Pricing</a>
+      <a href="#lines" class="btn gold">See Our Product Lines</a>
     </div>
   </div>
 </section>
 
-<div class="pure-tag">Shea Butter · Cocoa Butter · Texas Beeswax · Jojoba Oil · Essential Oils</div>
+<!-- =========== Product Line Router =========== -->
+<a id="lines"></a>
+<section id="line-router">
+  <div class="wrap">
+    <p class="section-label">Wholesale Only</p>
+    <h2 class="section-title">Our Product Lines</h2>
+    <p class="section-subtitle">Built out one line at a time, each held to the same standard. Here's what's available for wholesale order today.</p>
+
+    <div class="router-grid">
+      <a href="#products" class="router-card">
+        <p class="rc-eyebrow">Lab-Tested</p>
+        <h3>CBD Salve</h3>
+        <p>Broad-spectrum CBD-infused organic salve, third-party tested every batch.</p>
+        <span class="rc-cta">View the line →</span>
+      </a>
+      <a href="#concentrates" class="router-card">
+        <p class="rc-eyebrow">21+ · Wholesale Only</p>
+        <h3>THCP Concentrates</h3>
+        <p>THCP live resin crumble, multiple strains. Sold wholesale to licensed retailers only.</p>
+        <span class="rc-cta">View the line →</span>
+      </a>
+    </div>
+  </div>
+</section>
 
 <!-- =========== Products =========== -->
 <section id="products">
   <div class="wrap">
-    <p class="section-label">The Salve · Three Strengths</p>
+    <p class="section-label">CBD Salve · Wholesale</p>
     <h2 class="section-title">CBD Infused Salve</h2>
-    <p class="section-subtitle">Same organic formulation across every size. Pick the strength that fits how you'll use it — try the 0.5oz sample, keep the 2oz on hand, or invest in the 4oz value jar.</p>
+    <p class="section-subtitle">Same organic formulation across every size we carry. Stock what fits your customers — contact us for current wholesale pricing and minimum order quantities.</p>
+    <div class="pure-tag" style="margin: -10px 0 40px; border-radius: 6px; border: 1px solid var(--line);">Shea Butter · Cocoa Butter · Texas Beeswax · Jojoba Oil · Essential Oils</div>
 
     <div class="products">
 
@@ -594,11 +665,7 @@
           <p class="strength">Sample · 0.5oz (14g)</p>
           <h3>375mg</h3>
           <p class="size">Broad-spectrum · enough for a few weeks of targeted use</p>
-          <div class="price-row">
-            <span class="price">$40</span>
-            <span class="per-mg">$0.107/mg</span>
-          </div>
-          <a href="#contact" class="product-cta">Order the 375mg</a>
+          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('CBD Salve', '375mg')">Request Wholesale Pricing</a>
         </div>
       </div>
 
@@ -609,12 +676,8 @@
         <div class="info">
           <p class="strength">Daily · 2oz (57g)</p>
           <h3>1500mg</h3>
-          <p class="size">Broad-spectrum · the everyday jar, 4× the strength per dollar</p>
-          <div class="price-row">
-            <span class="price">$100</span>
-            <span class="per-mg">$0.067/mg</span>
-          </div>
-          <a href="#contact" class="product-cta">Order the 1500mg</a>
+          <p class="size">Broad-spectrum · the everyday jar</p>
+          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('CBD Salve', '1500mg')">Request Wholesale Pricing</a>
         </div>
       </div>
 
@@ -625,12 +688,8 @@
         <div class="info">
           <p class="strength">Best Value · 4oz (113g)</p>
           <h3>3000mg</h3>
-          <p class="size">Broad-spectrum · the household jar, lowest cost per mg</p>
-          <div class="price-row">
-            <span class="price">$170</span>
-            <span class="per-mg">$0.057/mg</span>
-          </div>
-          <a href="#contact" class="product-cta">Order the 3000mg</a>
+          <p class="size">Broad-spectrum · the household jar</p>
+          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('CBD Salve', '3000mg')">Request Wholesale Pricing</a>
         </div>
       </div>
 
@@ -643,7 +702,7 @@
   <div class="wrap">
     <p class="section-label">Wholesale Only · 21+</p>
     <h2 class="section-title">THCP Live Resin Crumble</h2>
-    <p class="section-subtitle">Six strains, 1.5g jars, 15 servings each. Sold wholesale to licensed retailers only — not available for direct consumer purchase. Volume pricing available; larger orders get better terms.</p>
+    <p class="section-subtitle">1.5g jars, 15 servings each, available across multiple strains. Sold wholesale to licensed retailers only — not available for direct consumer purchase. Contact us for current strain availability and pricing.</p>
 
     <div class="trust-row" style="margin-bottom: 50px;">
       <div class="trust">
@@ -664,6 +723,25 @@
       </div>
     </div>
 
+    <p class="section-label" style="margin-top: 10px;">What's Inside · THCP Concentrate</p>
+    <div class="ingredients-grid" style="margin-top: 20px; margin-bottom: 50px;">
+      <div class="ingredient">
+        <div class="ic">TP</div>
+        <div class="nm">THCP Extract</div>
+        <div class="desc">Hemp-derived · live resin extraction</div>
+      </div>
+      <div class="ingredient">
+        <div class="ic">TN</div>
+        <div class="nm">Terpenes</div>
+        <div class="desc">Strain-specific · from the live resin process</div>
+      </div>
+      <div class="ingredient">
+        <div class="ic">NA</div>
+        <div class="nm">No Additives</div>
+        <div class="desc">No fillers, cutting agents, or carrier oils</div>
+      </div>
+    </div>
+
     <div class="products">
 
       <div class="product">
@@ -672,7 +750,7 @@
           <p class="strength">Sativa</p>
           <h3>Apple Fritters</h3>
           <p class="size">1.5g jar · 15 servings (0.10g each)</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleStrain('Apple Fritters')">Request Wholesale Pricing</a>
+          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('THCP Live Resin Crumble (wholesale only)', 'Apple Fritters')">Request Wholesale Pricing</a>
         </div>
       </div>
 
@@ -682,7 +760,7 @@
           <p class="strength">Indica</p>
           <h3>Durban Sunrise</h3>
           <p class="size">1.5g jar · 15 servings (0.10g each)</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleStrain('Durban Sunrise')">Request Wholesale Pricing</a>
+          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('THCP Live Resin Crumble (wholesale only)', 'Durban Sunrise')">Request Wholesale Pricing</a>
         </div>
       </div>
 
@@ -692,7 +770,7 @@
           <p class="strength">Indica</p>
           <h3>GMO Cookies</h3>
           <p class="size">1.5g jar · 15 servings (0.10g each)</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleStrain('GMO Cookies')">Request Wholesale Pricing</a>
+          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('THCP Live Resin Crumble (wholesale only)', 'GMO Cookies')">Request Wholesale Pricing</a>
         </div>
       </div>
 
@@ -702,7 +780,7 @@
           <p class="strength">Hybrid</p>
           <h3>Permanent Marker</h3>
           <p class="size">1.5g jar · 15 servings (0.10g each)</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleStrain('Permanent Marker')">Request Wholesale Pricing</a>
+          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('THCP Live Resin Crumble (wholesale only)', 'Permanent Marker')">Request Wholesale Pricing</a>
         </div>
       </div>
 
@@ -712,7 +790,7 @@
           <p class="strength">Sativa</p>
           <h3>Jack Herer</h3>
           <p class="size">1.5g jar · 15 servings (0.10g each)</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleStrain('Jack Herer')">Request Wholesale Pricing</a>
+          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('THCP Live Resin Crumble (wholesale only)', 'Jack Herer')">Request Wholesale Pricing</a>
         </div>
       </div>
 
@@ -722,7 +800,7 @@
           <p class="strength">Hybrid</p>
           <h3>AK-47</h3>
           <p class="size">1.5g jar · 15 servings (0.10g each)</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleStrain('AK-47')">Request Wholesale Pricing</a>
+          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('THCP Live Resin Crumble (wholesale only)', 'AK-47')">Request Wholesale Pricing</a>
         </div>
       </div>
 
@@ -733,53 +811,53 @@
 <!-- =========== Ingredients =========== -->
 <section id="ingredients">
   <div class="wrap">
-    <p class="section-label">What's Inside</p>
+    <p class="section-label">What's Inside · CBD Salve</p>
     <h2 class="section-title">Organic Ingredients</h2>
     <p class="section-subtitle">Every ingredient is here for a reason. No fillers, no synthetic preservatives, no harsh chemicals.</p>
 
     <div class="ingredients-grid">
       <div class="ingredient">
-        <div class="ic">🌿</div>
+        <div class="ic">CBD</div>
         <div class="nm">Broad-Spectrum CBD</div>
         <div class="desc">Hemp-derived, &lt;0.3% THC</div>
       </div>
       <div class="ingredient">
-        <div class="ic">🥥</div>
+        <div class="ic">SB</div>
         <div class="nm">Shea Butter</div>
         <div class="desc">Organic · skin-conditioning</div>
       </div>
       <div class="ingredient">
-        <div class="ic">🍫</div>
+        <div class="ic">CB</div>
         <div class="nm">Cocoa Butter</div>
         <div class="desc">Organic · barrier protection</div>
       </div>
       <div class="ingredient">
-        <div class="ic">🐝</div>
+        <div class="ic">BW</div>
         <div class="nm">Texas Beeswax</div>
         <div class="desc">Locally sourced · seals moisture</div>
       </div>
       <div class="ingredient">
-        <div class="ic">🌻</div>
+        <div class="ic">JO</div>
         <div class="nm">Jojoba Oil</div>
         <div class="desc">Organic · matches skin's natural oils</div>
       </div>
       <div class="ingredient">
-        <div class="ic">🌱</div>
+        <div class="ic">PM</div>
         <div class="nm">Peppermint</div>
         <div class="desc">Essential oil · cooling</div>
       </div>
       <div class="ingredient">
-        <div class="ic">🌳</div>
+        <div class="ic">EU</div>
         <div class="nm">Eucalyptus</div>
         <div class="desc">Essential oil · clarifying</div>
       </div>
       <div class="ingredient">
-        <div class="ic">💜</div>
+        <div class="ic">LV</div>
         <div class="nm">Lavender</div>
         <div class="desc">Essential oil · calming</div>
       </div>
       <div class="ingredient">
-        <div class="ic">🌼</div>
+        <div class="ic">CH</div>
         <div class="nm">Chamomile</div>
         <div class="desc">Essential oil · soothing</div>
       </div>
@@ -795,7 +873,7 @@
         <img src="images/label-back.png" alt="HempHaus salve back label showing instructions and COA QR">
       </div>
       <div class="text">
-        <p class="section-label" style="text-align:left;">How To Use</p>
+        <p class="section-label" style="text-align:left;">How To Use · CBD Salve</p>
         <h3>Apply, then go on with your day.</h3>
         <p>Massage a small amount into the area you want to target. Repeat as often as you'd like — there's no toxicity limit. Apply day or night. Skin absorbs it quickly; no greasy residue.</p>
         <p style="color:var(--gold); font-size:13px; letter-spacing:1.5px; text-transform:uppercase; font-weight:600;">For external use only · Avoid eyes</p>
@@ -810,7 +888,7 @@
   <div class="wrap">
     <p class="section-label">Verified · CBD Salve</p>
     <h2 class="section-title">Lab-Tested. Every Batch.</h2>
-    <p class="section-subtitle">Our CBD salve is manufactured by Hawley Hemp Labs in Texas. Third-party tested for potency, residual solvents, heavy metals, and microbials. Certificate of Analysis on every tin.</p>
+    <p class="section-subtitle">Our CBD salve is third-party tested for potency, residual solvents, heavy metals, and microbials. Certificate of Analysis on every tin.</p>
 
     <div class="trust-row">
       <div class="trust">
@@ -818,8 +896,8 @@
         <div class="s">Multiple cannabinoids · &lt;0.3% THC (federally compliant)</div>
       </div>
       <div class="trust">
-        <div class="h">Texas Made</div>
-        <div class="s">Manufactured by Hawley Hemp Labs · Texas-sourced beeswax</div>
+        <div class="h">Small-Batch</div>
+        <div class="s">Consistent formulation, every batch · no shortcuts</div>
       </div>
       <div class="trust">
         <div class="h">COA per Batch</div>
@@ -840,6 +918,16 @@
     <h2 class="section-title">FAQ</h2>
 
     <details>
+      <summary>Do you sell direct to consumers?</summary>
+      <div class="answer">No — HempHaus is a wholesale supplier. We sell to licensed retailers, distributors, and qualified business buyers only. If you're an individual looking to buy, ask your local retailer to carry HempHaus, or contact us and we can point you to a stockist near you.</div>
+    </details>
+
+    <details>
+      <summary>How do I become a wholesale partner?</summary>
+      <div class="answer">Fill out the wholesale form below with your business info and what you're interested in carrying. We typically respond within one business day with current pricing, minimum order quantities, and lead times.</div>
+    </details>
+
+    <details>
       <summary>What's the difference between broad-spectrum and full-spectrum CBD?</summary>
       <div class="answer">Both contain multiple cannabinoids and terpenes from the hemp plant. The difference: broad-spectrum has had THC removed (so it's federally compliant at &lt;0.3% THC, which our salve is). Full-spectrum keeps the THC in. We use broad-spectrum because the salve is intended for daily, anytime use without psychoactive effects.</div>
     </details>
@@ -856,17 +944,12 @@
 
     <details>
       <summary>Is this regulated by the FDA?</summary>
-      <div class="answer">The FDA has not evaluated CBD for specific health claims. We do not market this product to diagnose, treat, cure, or prevent any disease. We comply with FDA labeling requirements for topical hemp-derived CBD products. The salve is manufactured in a registered facility (Hawley Hemp Labs) and tested by an independent third-party lab for every batch.</div>
+      <div class="answer">The FDA has not evaluated CBD for specific health claims. We do not market this product to diagnose, treat, cure, or prevent any disease. We comply with FDA labeling requirements for topical hemp-derived CBD products. The salve is manufactured in a registered facility and tested by an independent third-party lab for every batch.</div>
     </details>
 
     <details>
-      <summary>Where do you ship?</summary>
-      <div class="answer">All 50 US states. Federal hemp-derived CBD (under 0.3% THC) is legal nationally. Some states have specific labeling requirements — we meet all of them. Email us if you have a question about your specific state's rules.</div>
-    </details>
-
-    <details>
-      <summary>Do you sell wholesale?</summary>
-      <div class="answer">Yes. We work with select retailers, spas, salons, and CBD-knowledgeable boutiques. Email us at info@hemphaustx.com with a brief description of your shop and we'll send wholesale pricing + the minimum order info.</div>
+      <summary>Where do you ship wholesale orders?</summary>
+      <div class="answer">Nationwide, to retailers and distributors in all 50 states, subject to each state's rules on hemp-derived cannabinoid products. Requirements vary more for THCP than for our CBD salve — tell us your state and we'll confirm what we can ship there.</div>
     </details>
 
     <details>
@@ -881,50 +964,24 @@
   </div>
 </section>
 
-<!-- =========== Contact / Order =========== -->
+<!-- =========== Contact / Wholesale =========== -->
 <section id="contact">
   <div class="wrap">
-    <p class="section-label">Contact</p>
+    <p class="section-label">Wholesale Inquiries</p>
     <h2 class="section-title">Get In Touch</h2>
-    <p class="section-subtitle">During the launch phase, orders go through email and phone. We ship within two business days of payment confirmation. Wholesale and retail inquiries below.</p>
+    <p class="section-subtitle">HempHaus sells wholesale only, to licensed retailers and distributors. Tell us about your shop and what you're interested in — we'll follow up with current pricing, minimum order quantities, and lead times.</p>
 
     <div class="contact-wrap">
       <div class="contact-tabs">
-        <button type="button" class="contact-tab active" data-pane="retail" onclick="switchContactTab('retail')">Order &amp; Questions</button>
-        <button type="button" class="contact-tab" data-pane="wholesale" onclick="switchContactTab('wholesale')">Wholesale &amp; Spa</button>
+        <button type="button" class="contact-tab active" data-pane="wholesale" onclick="switchContactTab('wholesale')">Wholesale Inquiry</button>
         <button type="button" class="contact-tab" data-pane="press" onclick="switchContactTab('press')">Press &amp; Other</button>
       </div>
 
       <div class="contact-grid">
         <div>
-          <!-- RETAIL PANE -->
-          <div class="form-pane active" id="pane-retail">
-            <p class="form-help">For individual orders, sizing questions, ingredients, shipping, returns. We respond within one business day.</p>
-            <form class="contact-form" action="https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID" method="POST" onsubmit="return handleFormSubmit(event, this, 'retail')">
-              <input type="hidden" name="_subject" value="HempHaus — retail inquiry">
-              <input type="hidden" name="form_type" value="retail">
-              <input type="text" name="name" placeholder="Your name" required>
-              <input type="email" name="email" placeholder="Email address" required>
-              <input type="tel" name="phone" placeholder="Phone (optional, for callback)">
-              <select name="interest" required>
-                <option value="">What can we help with?</option>
-                <option>Place an order — 375mg sample</option>
-                <option>Place an order — 1500mg jar</option>
-                <option>Place an order — 3000mg jar</option>
-                <option>Mixed order / multiple sizes</option>
-                <option>Question about ingredients or use</option>
-                <option>Shipping or return question</option>
-                <option>Other</option>
-              </select>
-              <textarea name="message" placeholder="Anything else we should know? (Quantity, ship-to ZIP, deadline, etc.)" required></textarea>
-              <button type="submit" class="btn primary">Send Inquiry</button>
-              <p class="form-status" id="status-retail"></p>
-            </form>
-          </div>
-
           <!-- WHOLESALE PANE -->
-          <div class="form-pane" id="pane-wholesale">
-            <p class="form-help">For CBD shops, day spas, salons, yoga and wellness studios, organic groceries, tattoo studios, and other retail partners. We send wholesale terms within one business day and ship product samples to qualified buyers at no cost.</p>
+          <div class="form-pane active" id="pane-wholesale">
+            <p class="form-help">For CBD shops, day spas, salons, smoke/vape shops, distributors, and other qualified retail partners. We respond within one business day with current wholesale pricing and terms.</p>
             <form class="contact-form" action="https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID" method="POST" onsubmit="return handleFormSubmit(event, this, 'wholesale')">
               <input type="hidden" name="_subject" value="HempHaus — wholesale inquiry">
               <input type="hidden" name="form_type" value="wholesale">
@@ -936,9 +993,9 @@
                 <option value="">Interested in</option>
                 <option>CBD Salve</option>
                 <option>THCP Live Resin Crumble (wholesale only)</option>
-                <option>Both product lines</option>
+                <option>Both / not sure yet — send me the full catalog</option>
               </select>
-              <input type="text" name="strain_interest" id="wholesale-strain-interest" placeholder="If THCP crumble: which strain(s), or 'all 6'">
+              <input type="text" name="product_interest" id="wholesale-product-interest" placeholder="Any specifics? (sizes, strains, or leave blank)">
               <select name="business_type" required>
                 <option value="">Type of business</option>
                 <option>CBD specialty retail</option>
@@ -1007,13 +1064,6 @@
             </div>
           </div>
           <div class="info-row">
-            <div class="info-label">Manufacturer</div>
-            <div class="info-value">
-              Hawley Hemp Labs, Inc.<br>
-              Hawley, Texas
-            </div>
-          </div>
-          <div class="info-row">
             <div class="info-label">Lab Results (COA)</div>
             <div class="info-value">
               Available per batch on request via the QR code on each tin or by email
@@ -1032,18 +1082,16 @@
       <div>
         <a href="#top" class="brand" style="margin-bottom: 14px;">
           <img src="images/logo.png" class="brand-mark" alt="HempHaus" width="44" height="44">
-          <span class="brand-text">HEMPHAUS<span class="inc">INC</span></span>
+          <span class="brand-text">HEMPHAUS<span class="inc">INC.</span></span>
         </a>
-        <p style="font-size: 13px; color: var(--cream-dim); margin: 0 0 14px; max-width: 320px;">Broad-spectrum CBD-infused organic salve. Made in Texas. Lab-tested every batch.</p>
+        <p style="font-size: 13px; color: var(--cream-dim); margin: 0 0 14px; max-width: 320px;">Wholesale hemp-derived products for licensed retailers — CBD salve and THCP concentrates today, with more on the way. Lab-tested every batch.</p>
         <p style="font-size: 11px; color: var(--muted);">info@hemphaustx.com</p>
       </div>
       <div>
-        <h4>Shop</h4>
+        <h4>Product Lines</h4>
         <ul>
-          <li><a href="#products">375mg · Sample</a></li>
-          <li><a href="#products">1500mg · Daily</a></li>
-          <li><a href="#products">3000mg · Best Value</a></li>
-          <li><a href="#concentrates">THCP Crumble · Wholesale</a></li>
+          <li><a href="#products">CBD Salve</a></li>
+          <li><a href="#concentrates">THCP Concentrates</a></li>
         </ul>
       </div>
       <div>
@@ -1057,15 +1105,15 @@
       <div>
         <h4>Connect</h4>
         <ul>
-          <li><a href="#contact">Order</a></li>
-          <li><a href="mailto:info@hemphaustx.com?subject=Wholesale%20inquiry">Wholesale</a></li>
-          <li><a href="mailto:info@hemphaustx.com">Email</a></li>
+          <li><a href="#contact">Wholesale Inquiry</a></li>
+          <li><a href="mailto:info@hemphaustx.com?subject=Wholesale%20inquiry">Wholesale Email</a></li>
+          <li><a href="mailto:info@hemphaustx.com">General Email</a></li>
         </ul>
       </div>
     </div>
 
     <div class="disclaimer">
-      <strong style="color: var(--cream-dim);">Salve — for external use only.</strong> Contains less than 0.3% THC. This product has not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease. Keep out of reach of children. Discontinue use if irritation occurs. Consult your physician before use if you are pregnant, nursing, or taking medication. Manufactured by Hawley Hemp Labs, Inc.
+      <strong style="color: var(--cream-dim);">Salve — for external use only.</strong> Contains less than 0.3% THC. This product has not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease. Keep out of reach of children. Discontinue use if irritation occurs. Consult your physician before use if you are pregnant, nursing, or taking medication.
     </div>
 
     <div class="disclaimer">
@@ -1074,7 +1122,7 @@
 
     <div class="bottom">
       <div>© 2026 HempHaus, Inc. All rights reserved.</div>
-      <div class="mono">PURE · UNCOMPROMISED · MADE IN TEXAS</div>
+      <div class="mono">PURE · UNCOMPROMISED · WHOLESALE ONLY</div>
     </div>
   </div>
 </footer>
@@ -1082,14 +1130,14 @@
 <script>
   // Stub contact handler — replace with real Formspree/Resend integration
   // when ready. For now, surfaces a mailto fallback so leads aren't lost.
-  function presetWholesaleStrain(strain) {
+  function presetWholesaleInterest(line, detail) {
     switchContactTab('wholesale');
     const tabBtn = document.querySelector('.contact-tab[data-pane="wholesale"]');
     if (tabBtn) tabBtn.classList.add('active');
     const productLine = document.getElementById('wholesale-product-line');
-    const strainField = document.getElementById('wholesale-strain-interest');
-    if (productLine) productLine.value = 'THCP Live Resin Crumble (wholesale only)';
-    if (strainField) strainField.value = strain;
+    const detailField = document.getElementById('wholesale-product-interest');
+    if (productLine) productLine.value = line;
+    if (detailField) detailField.value = detail;
   }
 
   function switchContactTab(pane) {
