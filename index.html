@@ -14,599 +14,27 @@
   <meta property="og:url" content="https://hemphaustx.com/">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://hemphaustx.com/images/og-logo.png">
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="images/icon-180.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="images/icon-512.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/images/icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/images/icon-512.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0a0a0a;
-      --bg-2: #141414;
-      --bg-3: #1a1a1a;
-      --line: #2a2a2a;
-      --cream: #f5f1e8;
-      --cream-dim: #c8c2b5;
-      --muted: #807a70;
-      --green: #4ea64a;            /* matches leaf */
-      --green-deep: #1f5e2a;
-      --green-bright: #9aba3c;     /* "Pure. Uncompromised." amber-green */
-      --gold: #d4a14a;             /* matches the gold key + wreath */
-      --gold-deep: #a87c2e;
-      --shadow: 0 10px 40px rgba(0,0,0,0.5);
-    }
-
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body {
-      margin: 0; padding: 0;
-      background: var(--bg);
-      color: var(--cream);
-      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-      font-size: 16px;
-      line-height: 1.55;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-      max-width: 100vw;
-    }
-    img { max-width: 100%; height: auto; }
-
-    /* === Layout === */
-    .wrap { max-width: 1200px; margin: 0 auto; padding: 0 22px; }
-    .narrow { max-width: 760px; margin: 0 auto; padding: 0 22px; }
-    @media (max-width: 480px) {
-      .wrap { padding: 0 16px; }
-      .narrow { padding: 0 16px; }
-      section { padding: 50px 0; }
-    }
-
-    /* === Topbar === */
-    .topbar {
-      position: sticky; top: 0; z-index: 50;
-      background: rgba(10,10,10,0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--line);
-      padding: 12px 0;
-    }
-    .topbar .inner {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 20px; flex-wrap: wrap;
-    }
-    @media (max-width: 720px) {
-      .topbar { padding: 10px 0; }
-      nav { gap: 10px; }
-      nav a { font-size: 11px; letter-spacing: 0.5px; }
-      nav a:not(.nav-cta) { display: none; }
-      nav a.nav-cta { display: inline-flex; padding: 6px 12px; }
-      .hero { padding: 50px 0 40px; }
-      .hero .arch { letter-spacing: 2px !important; }
-      .hero .sub { letter-spacing: 1px; font-size: 12px; padding: 0 10px; }
-      .hero .lede { letter-spacing: 0.5px; }
-      .section-title { letter-spacing: 2px !important; }
-      .pure-tag { letter-spacing: 0 !important; word-spacing: 4px; font-size: 11px; }
-      .section-label { letter-spacing: 2px; }
-    }
-    @media (max-width: 460px) {
-      .brand { font-size: 14px; letter-spacing: 2px; }
-      .brand .inc { font-size: 10px; }
-      .hero .arch { font-size: 20px; letter-spacing: 1px !important; }
-      .hero .lede { font-size: 16px; line-height: 1.35; letter-spacing: 0; }
-      .hero .sub { word-spacing: 4px; }
-      .section-title { font-size: 22px; letter-spacing: 1px !important; }
-      .product h3 { font-size: 18px; letter-spacing: 1px; }
-      .product .strength, .product .size, .product .info > * {
-        letter-spacing: 1px !important; word-spacing: 1px;
-      }
-      .product .info { padding: 18px 14px; }
-      .feature-grid .text h3, .ingredient .nm, .trust .h, footer h4 { letter-spacing: 1px !important; }
-      .cta-row { flex-direction: column; align-items: stretch; padding: 0 14px; }
-      .cta-row .btn { width: 100%; }
-      .pure-tag { font-size: 9.5px !important; word-spacing: 1px !important; letter-spacing: 0 !important; }
-    }
-    .brand {
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: 18px;
-      letter-spacing: 4px;
-      font-weight: 500;
-      color: var(--cream);
-      text-decoration: none;
-      display: flex; align-items: center; gap: 12px;
-    }
-    .brand .inc { color: var(--gold); font-size: 12px; letter-spacing: 3px; margin-left: 4px; }
-    .brand-mark {
-      width: 44px; height: 44px;
-      display: block;
-      flex-shrink: 0;
-    }
-    .brand-text { display: flex; align-items: baseline; gap: 4px; line-height: 1; }
-    @media (max-width: 460px) {
-      .brand-mark { width: 36px; height: 36px; }
-    }
-    nav { display: flex; gap: 26px; }
-    nav a {
-      color: var(--cream-dim); text-decoration: none;
-      font-size: 13px; font-weight: 600;
-      letter-spacing: 1px; text-transform: uppercase;
-      transition: color 120ms;
-    }
-    nav a:hover { color: var(--gold); }
-    .nav-cta {
-      background: var(--green);
-      color: var(--bg) !important;
-      padding: 8px 16px; border-radius: 4px;
-      font-weight: 700;
-    }
-    .nav-cta:hover { background: var(--green-bright); color: var(--bg) !important; }
-
-    /* === Hero === */
-    .hero {
-      padding: 80px 0 60px;
-      text-align: center;
-      background:
-        radial-gradient(ellipse at top, #1a1f1a 0%, var(--bg) 60%);
-      border-bottom: 1px solid var(--line);
-    }
-    .hero-mark {
-      display: block;
-      margin: 0 auto 28px;
-      width: clamp(140px, 22vw, 220px);
-      height: auto;
-      filter: drop-shadow(0 4px 24px rgba(0,0,0,0.55));
-    }
-    .hero .arch {
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: clamp(22px, 6vw, 56px);
-      font-weight: 600;
-      letter-spacing: clamp(4px, 1.5vw, 10px);
-      color: var(--green-bright);
-      margin: 0 0 12px;
-      text-transform: uppercase;
-      word-wrap: break-word;
-    }
-    .hero .sub {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: clamp(15px, 2.2vw, 18px);
-      font-weight: 400;
-      color: var(--cream-dim);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin: 0 0 30px;
-    }
-    .hero .lede {
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: clamp(18px, 4vw, 42px);
-      font-weight: 400;
-      color: var(--cream);
-      letter-spacing: 1px;
-      max-width: 800px;
-      margin: 0 auto 32px;
-      line-height: 1.3;
-      padding: 0 8px;
-    }
-    .hero .cta-row {
-      display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
-      margin-top: 30px;
-    }
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 14px 28px; border-radius: 4px;
-      font-family: inherit; font-size: 14px; font-weight: 700;
-      letter-spacing: 1.5px; text-transform: uppercase;
-      cursor: pointer; text-decoration: none;
-      transition: all 150ms;
-      border: 1px solid var(--line);
-      background: var(--bg-2); color: var(--cream);
-    }
-    .btn:hover { background: var(--bg-3); border-color: var(--gold); color: var(--gold); }
-    .btn.primary {
-      background: var(--green); color: var(--bg); border-color: var(--green);
-    }
-    .btn.primary:hover { background: var(--green-bright); border-color: var(--green-bright); color: var(--bg); }
-    .btn.gold { background: var(--gold); color: var(--bg); border-color: var(--gold); }
-    .btn.gold:hover { background: #e6b85f; color: var(--bg); border-color: #e6b85f; }
-
-    /* === Section wrappers === */
-    section { padding: 70px 0; border-bottom: 1px solid var(--line); }
-    .section-label {
-      font-family: 'JetBrains Mono', 'SF Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin: 0 0 12px;
-      text-align: center;
-    }
-    .section-title {
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: clamp(28px, 5vw, 40px);
-      font-weight: 500;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      text-align: center;
-      color: var(--cream);
-      margin: 0 0 14px;
-    }
-    .section-subtitle {
-      text-align: center; color: var(--cream-dim);
-      max-width: 600px; margin: 0 auto 50px;
-      font-size: 16px;
-    }
-
-    /* === Products === */
-    .products {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 30px;
-    }
-    @media (max-width: 880px) { .products { grid-template-columns: 1fr; gap: 26px; } }
-    .product {
-      background: var(--bg-2);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      overflow: hidden;
-      transition: all 200ms;
-      display: flex; flex-direction: column;
-    }
-    .product:hover { border-color: var(--gold-deep); box-shadow: var(--shadow); transform: translateY(-4px); }
-    .product .photo {
-      background: #000;
-      aspect-ratio: 1;
-      display: flex; align-items: center; justify-content: center;
-      overflow: hidden;
-    }
-    .product .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .product .info { padding: 24px; flex: 1; display: flex; flex-direction: column; }
-    .product .strength {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; letter-spacing: 3px;
-      color: var(--gold); text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-    .product h3 {
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: 22px; font-weight: 500;
-      letter-spacing: 2px; text-transform: uppercase;
-      color: var(--cream);
-      margin: 0 0 8px;
-    }
-    .product .size {
-      font-size: 13px; color: var(--cream-dim);
-      margin-bottom: 18px;
-    }
-    .product .price-row {
-      display: flex; align-items: baseline; gap: 8px;
-      margin: auto 0 18px;
-    }
-    .product .price {
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: 32px; font-weight: 600;
-      color: var(--green-bright);
-    }
-    .product .per-mg {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; color: var(--muted);
-      letter-spacing: 1px;
-    }
-    .product .product-cta {
-      width: 100%; padding: 14px;
-      background: transparent; color: var(--gold);
-      border: 1px solid var(--gold);
-      border-radius: 4px;
-      font-family: inherit; font-weight: 700; font-size: 13px;
-      letter-spacing: 2px; text-transform: uppercase;
-      cursor: pointer; transition: all 150ms;
-    }
-    .product .product-cta:hover { background: var(--gold); color: var(--bg); }
-    .product .badge {
-      position: absolute;
-      background: var(--green); color: var(--bg);
-      padding: 4px 10px; border-radius: 2px;
-      font-size: 10px; font-weight: 700;
-      letter-spacing: 1.5px; text-transform: uppercase;
-      margin: 12px; top: 0; left: 0;
-    }
-
-    /* === Product line router === */
-    .router-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 26px;
-      margin-top: 10px;
-    }
-    .router-card {
-      display: block;
-      background: var(--bg-2);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 36px 30px;
-      text-align: center;
-      text-decoration: none;
-      transition: all 200ms;
-    }
-    .router-card:hover { border-color: var(--gold-deep); box-shadow: var(--shadow); transform: translateY(-4px); }
-    .router-card .rc-eyebrow {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; letter-spacing: 3px;
-      color: var(--gold); text-transform: uppercase;
-      margin: 0 0 10px;
-    }
-    .router-card h3 {
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: 24px; font-weight: 500;
-      letter-spacing: 2px; text-transform: uppercase;
-      color: var(--cream);
-      margin: 0 0 12px;
-    }
-    .router-card p:not(.rc-eyebrow) { color: var(--cream-dim); font-size: 14px; margin: 0 0 20px; }
-    .router-card .rc-cta {
-      display: inline-block;
-      color: var(--gold); font-weight: 700; font-size: 12px;
-      letter-spacing: 1.5px; text-transform: uppercase;
-    }
-
-    /* === Two-column feature blocks === */
-    .feature-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 50px;
-      align-items: center;
-    }
-    @media (max-width: 880px) { .feature-grid { grid-template-columns: 1fr; gap: 32px; } }
-    .feature-grid img { width: 100%; border-radius: 8px; }
-    .feature-grid .text h3 {
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: 26px; font-weight: 500;
-      letter-spacing: 2px; text-transform: uppercase;
-      color: var(--green-bright);
-      margin: 0 0 16px;
-    }
-    .feature-grid .text p { color: var(--cream-dim); margin: 0 0 14px; }
-
-    /* === Ingredients list === */
-    .ingredients-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 18px;
-      margin-top: 30px;
-    }
-    .ingredient {
-      padding: 22px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: var(--bg-2);
-      text-align: center;
-    }
-    .ingredient .ic {
-      width: 44px; height: 44px;
-      margin: 0 auto 14px;
-      display: flex; align-items: center; justify-content: center;
-      border: 1px solid var(--gold-deep);
-      border-radius: 50%;
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: 13px; font-weight: 600;
-      letter-spacing: 0.5px;
-      color: var(--gold);
-    }
-    .ingredient .nm {
-      font-family: 'Cinzel', serif;
-      font-size: 15px; font-weight: 500;
-      letter-spacing: 2px; text-transform: uppercase;
-      color: var(--cream);
-      margin-bottom: 6px;
-    }
-    .ingredient .desc {
-      font-size: 12px;
-      color: var(--muted);
-      letter-spacing: 0.3px;
-    }
-
-    /* === Story === */
-    .story p { color: var(--cream-dim); font-size: 17px; margin-bottom: 18px; }
-    .story .pull {
-      font-family: 'Cinzel', serif;
-      font-size: 24px; font-weight: 400;
-      color: var(--green-bright);
-      letter-spacing: 1px;
-      text-align: center;
-      margin: 36px 0;
-      padding: 24px;
-      border-top: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
-    }
-
-    /* === FAQ === */
-    .faq details {
-      padding: 18px 0;
-      border-bottom: 1px solid var(--line);
-      cursor: pointer;
-    }
-    .faq details[open] summary { color: var(--gold); }
-    .faq summary {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 16px; font-weight: 600;
-      color: var(--cream);
-      list-style: none;
-      display: flex; justify-content: space-between; align-items: center;
-      padding-right: 6px;
-    }
-    .faq summary::-webkit-details-marker { display: none; }
-    .faq summary::after { content: '+'; font-size: 22px; color: var(--gold); margin-left: 12px; }
-    .faq details[open] summary::after { content: '−'; }
-    .faq .answer { padding: 14px 0 4px; color: var(--cream-dim); font-size: 15px; }
-
-    /* === COA / Trust badges === */
-    .trust-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-top: 30px;
-    }
-    .trust {
-      text-align: center; padding: 24px 16px;
-      border: 1px solid var(--gold-deep); border-radius: 6px;
-      background: rgba(168, 124, 46, 0.06);
-    }
-    .trust .h {
-      font-family: 'Cinzel', serif;
-      font-size: 18px; letter-spacing: 2px;
-      color: var(--gold); text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-    .trust .s { font-size: 12px; color: var(--cream-dim); }
-
-    /* === Contact === */
-    .contact-wrap {
-      max-width: 880px; margin: 30px auto 0;
-    }
-    .contact-tabs {
-      display: flex; justify-content: center; gap: 0;
-      border-bottom: 1px solid var(--line);
-      margin-bottom: 36px;
-    }
-    .contact-tab {
-      background: none; border: 0; cursor: pointer;
-      padding: 14px 26px;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 12px; font-weight: 600;
-      letter-spacing: 2px; text-transform: uppercase;
-      color: var(--cream-dim);
-      border-bottom: 2px solid transparent;
-      margin-bottom: -1px;
-      transition: color 150ms, border-color 150ms;
-    }
-    .contact-tab:hover { color: var(--cream); }
-    .contact-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
-    .contact-grid {
-      display: grid; grid-template-columns: 1.3fr 1fr; gap: 50px;
-      align-items: start;
-    }
-    @media (max-width: 760px) { .contact-grid { grid-template-columns: 1fr; gap: 32px; } }
-    .contact-form {
-      display: flex; flex-direction: column; gap: 14px;
-    }
-    .contact-form input,
-    .contact-form textarea,
-    .contact-form select {
-      width: 100%; padding: 14px 16px;
-      background: var(--bg-2); color: var(--cream);
-      border: 1px solid var(--line); border-radius: 4px;
-      font-family: inherit; font-size: 15px;
-      outline: none;
-    }
-    .contact-form input:focus,
-    .contact-form textarea:focus,
-    .contact-form select:focus { border-color: var(--gold); background: var(--bg-3); }
-    .contact-form textarea { min-height: 120px; resize: vertical; }
-    .contact-info {
-      background: var(--bg-2); border: 1px solid var(--line);
-      border-radius: 4px; padding: 28px;
-    }
-    .contact-info h3 {
-      font-family: 'Cinzel', serif; font-size: 14px;
-      letter-spacing: 2px; color: var(--gold);
-      text-transform: uppercase; margin: 0 0 18px;
-    }
-    .contact-info .info-row {
-      padding: 12px 0; border-bottom: 1px solid var(--line);
-    }
-    .contact-info .info-row:last-child { border-bottom: 0; padding-bottom: 0; }
-    .contact-info .info-row:first-child { padding-top: 0; }
-    .contact-info .info-label {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 4px;
-    }
-    .contact-info .info-value {
-      font-size: 14px; color: var(--cream);
-      line-height: 1.5;
-    }
-    .contact-info .info-value a {
-      color: var(--cream); text-decoration: none;
-      border-bottom: 1px solid var(--gold);
-    }
-    .contact-info .info-value a:hover { color: var(--gold); }
-    .form-pane { display: none; }
-    .form-pane.active { display: block; }
-    .form-help {
-      font-size: 12px; color: var(--cream-dim);
-      margin: 0 0 14px;
-      line-height: 1.5;
-    }
-    .form-status {
-      text-align: center;
-      margin: 6px 0 0;
-      min-height: 20px;
-      font-size: 13px;
-      color: var(--cream-dim);
-    }
-    .contact-form select {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23a09078' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 16px center;
-      padding-right: 40px;
-    }
-
-    /* === Footer === */
-    footer {
-      background: #050505;
-      padding: 50px 0 30px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-    }
-    footer .row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 30px; margin-bottom: 36px; }
-    @media (max-width: 760px) { footer .row { grid-template-columns: 1fr 1fr; } }
-    footer h4 {
-      font-family: 'Cinzel', serif;
-      font-size: 12px; letter-spacing: 2.5px; text-transform: uppercase;
-      color: var(--gold); margin: 0 0 14px;
-    }
-    footer ul { list-style: none; padding: 0; margin: 0; }
-    footer li { margin-bottom: 8px; font-size: 13px; }
-    footer a { color: var(--cream-dim); text-decoration: none; transition: color 100ms; }
-    footer a:hover { color: var(--gold); }
-    footer .disclaimer {
-      font-size: 11px; line-height: 1.6; color: var(--muted);
-      border-top: 1px solid var(--line); padding-top: 22px;
-      margin-bottom: 16px;
-    }
-    footer .bottom { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
-    footer .bottom .mono { font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; }
-
-    /* Tag for "Pure. Uncompromised." */
-    .pure-tag {
-      font-family: 'Cinzel', serif;
-      letter-spacing: clamp(1px, 1vw, 6px);
-      font-weight: 500;
-      color: var(--green-bright);
-      text-transform: uppercase;
-      text-align: center;
-      padding: 14px 16px;
-      border-top: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
-      background: #050505;
-      font-size: clamp(10px, 1.8vw, 12px);
-      word-spacing: 2px;
-      line-height: 1.6;
-    }
-    .section-title { padding: 0 8px; word-wrap: break-word; }
-  </style>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 
 <!-- =========== Topbar =========== -->
 <header class="topbar">
   <div class="wrap inner">
-    <a href="#top" class="brand">
-      <img src="images/logo.png" class="brand-mark" alt="HempHaus" width="44" height="44">
+    <a href="/" class="brand">
+      <img src="/images/logo.png" class="brand-mark" alt="HempHaus" width="44" height="44">
       <span class="brand-text">HEMPHAUS<span class="inc">INC.</span></span>
     </a>
     <nav>
-      <a href="#products">Salve</a>
-      <a href="#concentrates">Concentrates</a>
-      <a href="#ingredients">Ingredients</a>
+      <a href="/salve/">Salve</a>
+      <a href="/concentrates/">Concentrates</a>
       <a href="#faq">FAQ</a>
       <a href="#contact" class="nav-cta">Wholesale Inquiry</a>
     </nav>
@@ -617,7 +45,7 @@
 <a id="top"></a>
 <section class="hero">
   <div class="wrap">
-    <img src="images/logo.png" class="hero-mark" alt="HempHaus Inc." width="220" height="220">
+    <img src="/images/logo.png" class="hero-mark" alt="HempHaus Inc." width="220" height="220">
     <p class="arch">Pure. Uncompromised.</p>
     <p class="sub">Hemp-Derived Products · Wholesale to Licensed Retailers</p>
     <h1 class="lede">Verified ingredients.<br>Verified compliance.<br>Every line we carry.</h1>
@@ -637,13 +65,13 @@
     <p class="section-subtitle">Built out one line at a time, each held to the same standard. Here's what's available for wholesale order today.</p>
 
     <div class="router-grid">
-      <a href="#products" class="router-card">
+      <a href="/salve/" class="router-card">
         <p class="rc-eyebrow">Lab-Tested</p>
         <h3>CBD Salve</h3>
         <p>Broad-spectrum CBD-infused organic salve, third-party tested every batch.</p>
         <span class="rc-cta">View the line →</span>
       </a>
-      <a href="#concentrates" class="router-card">
+      <a href="/concentrates/" class="router-card">
         <p class="rc-eyebrow">21+ · Wholesale Only</p>
         <h3>THCP Concentrates</h3>
         <p>THCP live resin crumble, multiple strains. Sold wholesale to licensed retailers only.</p>
@@ -653,278 +81,35 @@
   </div>
 </section>
 
-<!-- =========== Products =========== -->
-<section id="products">
-  <div class="wrap">
-    <p class="section-label">CBD Salve · Wholesale</p>
-    <h2 class="section-title">CBD Infused Salve</h2>
-    <p class="section-subtitle">Same organic formulation across every size we carry. Stock what fits your customers — contact us for current wholesale pricing and minimum order quantities.</p>
-
-    <div class="products">
-
-      <div class="product">
-        <div class="photo">
-          <img src="images/label-375mg-front.png" alt="HempHaus 375mg CBD Infused Salve">
-        </div>
-        <div class="info">
-          <p class="strength">Sample · 0.5oz (14g)</p>
-          <h3>375mg</h3>
-          <p class="size">Broad-spectrum · enough for a few weeks of targeted use</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('CBD Salve', '375mg')">Request Wholesale Pricing</a>
-        </div>
-      </div>
-
-      <div class="product">
-        <div class="photo">
-          <img src="images/label-1500mg-front.png" alt="HempHaus 1500mg CBD Infused Salve">
-        </div>
-        <div class="info">
-          <p class="strength">Daily · 2oz (57g)</p>
-          <h3>1500mg</h3>
-          <p class="size">Broad-spectrum · the everyday jar</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('CBD Salve', '1500mg')">Request Wholesale Pricing</a>
-        </div>
-      </div>
-
-      <div class="product">
-        <div class="photo">
-          <img src="images/label-3000mg-front.png" alt="HempHaus 3000mg CBD Infused Salve">
-        </div>
-        <div class="info">
-          <p class="strength">Best Value · 4oz (113g)</p>
-          <h3>3000mg</h3>
-          <p class="size">Broad-spectrum · the household jar</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('CBD Salve', '3000mg')">Request Wholesale Pricing</a>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- =========== Ingredients (CBD Salve) =========== -->
-<section id="ingredients">
-  <div class="wrap">
-    <p class="section-label">What's Inside · CBD Salve</p>
-    <h2 class="section-title">Organic Ingredients</h2>
-    <p class="section-subtitle">Every ingredient is here for a reason. No fillers, no synthetic preservatives, no harsh chemicals.</p>
-
-    <div class="ingredients-grid">
-      <div class="ingredient">
-        <div class="ic">CBD</div>
-        <div class="nm">Broad-Spectrum CBD</div>
-        <div class="desc">Hemp-derived, &lt;0.3% THC</div>
-      </div>
-      <div class="ingredient">
-        <div class="ic">SB</div>
-        <div class="nm">Shea Butter</div>
-        <div class="desc">Organic · skin-conditioning</div>
-      </div>
-      <div class="ingredient">
-        <div class="ic">CB</div>
-        <div class="nm">Cocoa Butter</div>
-        <div class="desc">Organic · barrier protection</div>
-      </div>
-      <div class="ingredient">
-        <div class="ic">BW</div>
-        <div class="nm">Texas Beeswax</div>
-        <div class="desc">Locally sourced · seals moisture</div>
-      </div>
-      <div class="ingredient">
-        <div class="ic">JO</div>
-        <div class="nm">Jojoba Oil</div>
-        <div class="desc">Organic · matches skin's natural oils</div>
-      </div>
-      <div class="ingredient">
-        <div class="ic">PM</div>
-        <div class="nm">Peppermint</div>
-        <div class="desc">Essential oil · cooling</div>
-      </div>
-      <div class="ingredient">
-        <div class="ic">EU</div>
-        <div class="nm">Eucalyptus</div>
-        <div class="desc">Essential oil · clarifying</div>
-      </div>
-      <div class="ingredient">
-        <div class="ic">LV</div>
-        <div class="nm">Lavender</div>
-        <div class="desc">Essential oil · calming</div>
-      </div>
-      <div class="ingredient">
-        <div class="ic">CH</div>
-        <div class="nm">Chamomile</div>
-        <div class="desc">Essential oil · soothing</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =========== How to use =========== -->
-<section id="how-to-use">
-  <div class="wrap">
-    <div class="feature-grid">
-      <div>
-        <img src="images/label-back.png" alt="HempHaus salve back label showing instructions and COA QR">
-      </div>
-      <div class="text">
-        <p class="section-label" style="text-align:left;">How To Use · CBD Salve</p>
-        <h3>Apply, then go on with your day.</h3>
-        <p>Massage a small amount into the area you want to target. Repeat as often as you'd like — there's no toxicity limit. Apply day or night. Skin absorbs it quickly; no greasy residue.</p>
-        <p style="color:var(--gold); font-size:13px; letter-spacing:1.5px; text-transform:uppercase; font-weight:600;">For external use only · Avoid eyes</p>
-        <p style="margin-top:24px;">Every tin has a QR code linking to its specific Certificate of Analysis. Scan with your phone to verify potency, purity, and batch authenticity.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =========== Trust / COA (CBD Salve) =========== -->
+<!-- =========== Company-wide trust =========== -->
 <section id="trust">
   <div class="wrap">
-    <p class="section-label">Verified · CBD Salve</p>
-    <h2 class="section-title">Lab-Tested. Every Batch.</h2>
-    <p class="section-subtitle">Our CBD salve is third-party tested for potency, residual solvents, heavy metals, and microbials. Certificate of Analysis on every tin.</p>
+    <p class="section-label">How We Operate</p>
+    <h2 class="section-title">Wholesale, Done Properly</h2>
+    <p class="section-subtitle">The same standard applies no matter which line you're ordering from.</p>
 
     <div class="trust-row">
       <div class="trust">
-        <div class="h">Broad Spectrum</div>
-        <div class="s">Multiple cannabinoids · &lt;0.3% THC (federally compliant)</div>
+        <div class="h">Wholesale Only</div>
+        <div class="s">We sell exclusively to licensed retailers and distributors — never direct to consumers.</div>
       </div>
       <div class="trust">
-        <div class="h">Small-Batch</div>
-        <div class="s">Consistent formulation, every batch · no shortcuts</div>
+        <div class="h">Lab-Tested</div>
+        <div class="s">Every line is third-party tested. Certificates of Analysis available per batch on request.</div>
       </div>
       <div class="trust">
-        <div class="h">COA per Batch</div>
-        <div class="s">QR on every tin · scan for that batch's lab results</div>
+        <div class="h">Compliance-First</div>
+        <div class="s">We tell retailers what's required in their state before they buy, not after.</div>
       </div>
       <div class="trust">
-        <div class="h">Organic</div>
-        <div class="s">All carrier oils + butters certified organic · no synthetic preservatives</div>
+        <div class="h">Growing Catalog</div>
+        <div class="s">Built out one line at a time — see each product page for what's currently available.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- =========== THCP Concentrates (Wholesale) =========== -->
-<section id="concentrates">
-  <div class="wrap">
-    <p class="section-label">Wholesale Only · 21+</p>
-    <h2 class="section-title">THCP Live Resin Crumble</h2>
-    <p class="section-subtitle">1.5g jars, 15 servings each, available across multiple strains. Sold wholesale to licensed retailers only — not available for direct consumer purchase. Contact us for current strain availability and pricing.</p>
-
-    <div class="trust-row">
-      <div class="trust">
-        <div class="h">21+ Only</div>
-        <div class="s">Age verification required at retail. Not for sale to minors under any circumstance.</div>
-      </div>
-      <div class="trust">
-        <div class="h">Check Your State</div>
-        <div class="s">THCP's legal status varies by state and is changing rapidly. Retailers are solely responsible for confirming this product is legal to sell in their jurisdiction before purchase.</div>
-      </div>
-      <div class="trust">
-        <div class="h">Will Show On A Drug Test</div>
-        <div class="s">Unlike our broad-spectrum CBD salve, THCP is psychoactive and will very likely cause a positive result on any THC drug screen.</div>
-      </div>
-      <div class="trust">
-        <div class="h">Lab Tested</div>
-        <div class="s">Third-party Certificate of Analysis available per batch on request.</div>
-      </div>
-    </div>
-
-    <div class="products">
-
-      <div class="product">
-        <div class="photo"><img src="images/label-thcp-apple-fritters.png" alt="HempHaus THCP Live Resin Crumble — Apple Fritters"></div>
-        <div class="info">
-          <p class="strength">Sativa</p>
-          <h3>Apple Fritters</h3>
-          <p class="size">1.5g jar · 15 servings (0.10g each)</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('THCP Live Resin Crumble (wholesale only)', 'Apple Fritters')">Request Wholesale Pricing</a>
-        </div>
-      </div>
-
-      <div class="product">
-        <div class="photo"><img src="images/label-thcp-durban-sunrise.png" alt="HempHaus THCP Live Resin Crumble — Durban Sunrise"></div>
-        <div class="info">
-          <p class="strength">Indica</p>
-          <h3>Durban Sunrise</h3>
-          <p class="size">1.5g jar · 15 servings (0.10g each)</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('THCP Live Resin Crumble (wholesale only)', 'Durban Sunrise')">Request Wholesale Pricing</a>
-        </div>
-      </div>
-
-      <div class="product">
-        <div class="photo"><img src="images/label-thcp-gmo-cookies.png" alt="HempHaus THCP Live Resin Crumble — GMO Cookies"></div>
-        <div class="info">
-          <p class="strength">Indica</p>
-          <h3>GMO Cookies</h3>
-          <p class="size">1.5g jar · 15 servings (0.10g each)</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('THCP Live Resin Crumble (wholesale only)', 'GMO Cookies')">Request Wholesale Pricing</a>
-        </div>
-      </div>
-
-      <div class="product">
-        <div class="photo"><img src="images/label-thcp-permanent-marker.png" alt="HempHaus THCP Live Resin Crumble — Permanent Marker"></div>
-        <div class="info">
-          <p class="strength">Hybrid</p>
-          <h3>Permanent Marker</h3>
-          <p class="size">1.5g jar · 15 servings (0.10g each)</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('THCP Live Resin Crumble (wholesale only)', 'Permanent Marker')">Request Wholesale Pricing</a>
-        </div>
-      </div>
-
-      <div class="product">
-        <div class="photo"><img src="images/label-thcp-jack-herer.png" alt="HempHaus THCP Live Resin Crumble — Jack Herer"></div>
-        <div class="info">
-          <p class="strength">Sativa</p>
-          <h3>Jack Herer</h3>
-          <p class="size">1.5g jar · 15 servings (0.10g each)</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('THCP Live Resin Crumble (wholesale only)', 'Jack Herer')">Request Wholesale Pricing</a>
-        </div>
-      </div>
-
-      <div class="product">
-        <div class="photo"><img src="images/label-thcp-ak-47.png" alt="HempHaus THCP Live Resin Crumble — AK-47"></div>
-        <div class="info">
-          <p class="strength">Hybrid</p>
-          <h3>AK-47</h3>
-          <p class="size">1.5g jar · 15 servings (0.10g each)</p>
-          <a href="#contact" class="product-cta" onclick="presetWholesaleInterest('THCP Live Resin Crumble (wholesale only)', 'AK-47')">Request Wholesale Pricing</a>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- =========== Ingredients (THCP Concentrate) =========== -->
-<section id="concentrate-ingredients">
-  <div class="wrap">
-    <p class="section-label">What's Inside · THCP Concentrate</p>
-    <h2 class="section-title">Composition</h2>
-    <p class="section-subtitle">A live resin crumble is close to a single-ingredient product by design. No carriers, no cutting agents — just the extract.</p>
-
-    <div class="ingredients-grid">
-      <div class="ingredient">
-        <div class="ic">TP</div>
-        <div class="nm">THCP Extract</div>
-        <div class="desc">Hemp-derived · live resin extraction</div>
-      </div>
-      <div class="ingredient">
-        <div class="ic">TN</div>
-        <div class="nm">Terpenes</div>
-        <div class="desc">Strain-specific · from the live resin process</div>
-      </div>
-      <div class="ingredient">
-        <div class="ic">NA</div>
-        <div class="nm">No Additives</div>
-        <div class="desc">No fillers, cutting agents, or carrier oils</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =========== FAQ =========== -->
+<!-- =========== FAQ (general) =========== -->
 <section id="faq">
   <div class="wrap narrow faq">
     <p class="section-label">Common Questions</p>
@@ -941,38 +126,18 @@
     </details>
 
     <details>
-      <summary>What's the difference between broad-spectrum and full-spectrum CBD?</summary>
-      <div class="answer">Both contain multiple cannabinoids and terpenes from the hemp plant. The difference: broad-spectrum has had THC removed (so it's federally compliant at &lt;0.3% THC, which our salve is). Full-spectrum keeps the THC in. We use broad-spectrum because the salve is intended for daily, anytime use without psychoactive effects.</div>
-    </details>
-
-    <details>
-      <summary>Will this show up on a drug test?</summary>
-      <div class="answer">Broad-spectrum CBD contains less than 0.3% THC by federal definition, and topical application generally doesn't enter the bloodstream the way ingestion does. That said, we can't guarantee individual test outcomes — they depend on the test, the threshold, and how much salve you're using. If you're tested regularly for THC, consult your testing program's guidance.</div>
-    </details>
-
-    <details>
-      <summary>How often can I use it?</summary>
-      <div class="answer">As often as you'd like. There's no toxicity ceiling. Most people apply 1–3 times a day to a specific area. Some keep a tin at their desk for daily use, others save it for after workouts or before bed. Use what feels right.</div>
-    </details>
-
-    <details>
-      <summary>Is this regulated by the FDA?</summary>
-      <div class="answer">The FDA has not evaluated CBD for specific health claims. We do not market this product to diagnose, treat, cure, or prevent any disease. We comply with FDA labeling requirements for topical hemp-derived CBD products. The salve is manufactured in a registered facility and tested by an independent third-party lab for every batch.</div>
-    </details>
-
-    <details>
       <summary>Where do you ship wholesale orders?</summary>
       <div class="answer">Nationwide, to retailers and distributors in all 50 states, subject to each state's rules on hemp-derived cannabinoid products. Requirements vary more for THCP than for our CBD salve — tell us your state and we'll confirm what we can ship there.</div>
     </details>
 
     <details>
-      <summary>How long does a tin last?</summary>
-      <div class="answer">Depends on usage. Lightly used on a small target area, the 2oz (1500mg) jar lasts 2–3 months. Heavy daily use across multiple areas, the 4oz (3000mg) is typically a 4–6 month supply for one person. The 0.5oz (375mg) is a 3–4 week trial size.</div>
+      <summary>Do you offer samples before a full order?</summary>
+      <div class="answer">Yes — free to qualified buyers. Mention it in your wholesale inquiry below and we'll get samples out to you.</div>
     </details>
 
     <details>
-      <summary>Why Texas beeswax specifically?</summary>
-      <div class="answer">Texas beeswax has a higher melting point than most commercial beeswax, which gives the salve its specific texture — solid enough to scoop, soft enough to melt instantly on skin. We source it from a small Texas apiary that doesn't process the wax aggressively, which preserves more of the natural enzymes and antibacterial properties.</div>
+      <summary>Product-specific questions?</summary>
+      <div class="answer">Ingredient lists, usage details, drug-test info, and line-specific compliance notes live on each product's own page — see <a href="/salve/" style="color:var(--gold);">CBD Salve</a> or <a href="/concentrates/" style="color:var(--gold);">THCP Concentrates</a>.</div>
     </details>
   </div>
 </section>
@@ -1093,8 +258,8 @@
   <div class="wrap">
     <div class="row">
       <div>
-        <a href="#top" class="brand" style="margin-bottom: 14px;">
-          <img src="images/logo.png" class="brand-mark" alt="HempHaus" width="44" height="44">
+        <a href="/" class="brand" style="margin-bottom: 14px;">
+          <img src="/images/logo.png" class="brand-mark" alt="HempHaus" width="44" height="44">
           <span class="brand-text">HEMPHAUS<span class="inc">INC.</span></span>
         </a>
         <p style="font-size: 13px; color: var(--cream-dim); margin: 0 0 14px; max-width: 320px;">Wholesale hemp-derived products for licensed retailers — CBD salve and THCP concentrates today, with more on the way. Lab-tested every batch.</p>
@@ -1103,16 +268,15 @@
       <div>
         <h4>Product Lines</h4>
         <ul>
-          <li><a href="#products">CBD Salve</a></li>
-          <li><a href="#concentrates">THCP Concentrates</a></li>
+          <li><a href="/salve/">CBD Salve</a></li>
+          <li><a href="/concentrates/">THCP Concentrates</a></li>
         </ul>
       </div>
       <div>
         <h4>Learn</h4>
         <ul>
-          <li><a href="#ingredients">Ingredients</a></li>
           <li><a href="#faq">FAQ</a></li>
-          <li><a href="#trust">Lab testing</a></li>
+          <li><a href="#trust">How We Operate</a></li>
         </ul>
       </div>
       <div>
@@ -1141,17 +305,26 @@
 </footer>
 
 <script>
-  // Stub contact handler — replace with real Formspree/Resend integration
-  // when ready. For now, surfaces a mailto fallback so leads aren't lost.
   function presetWholesaleInterest(line, detail) {
     switchContactTab('wholesale');
     const tabBtn = document.querySelector('.contact-tab[data-pane="wholesale"]');
     if (tabBtn) tabBtn.classList.add('active');
     const productLine = document.getElementById('wholesale-product-line');
     const detailField = document.getElementById('wholesale-product-interest');
-    if (productLine) productLine.value = line;
-    if (detailField) detailField.value = detail;
+    if (productLine && line) productLine.value = line;
+    if (detailField && detail) detailField.value = detail;
   }
+
+  // Pick up ?product=&detail= from cross-page CTA links (e.g. /salve/, /concentrates/)
+  // and preset the wholesale form automatically on load.
+  (function presetFromQueryString() {
+    const params = new URLSearchParams(window.location.search);
+    const product = params.get('product');
+    const detail = params.get('detail');
+    if (product) {
+      presetWholesaleInterest(product, detail || '');
+    }
+  })();
 
   function switchContactTab(pane) {
     document.querySelectorAll('.contact-tab').forEach(t => {
@@ -1215,7 +388,7 @@
     return false;
   }
 
-  // Smooth scroll on anchor click
+  // Smooth scroll on in-page anchor click
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', (e) => {
       const id = a.getAttribute('href').slice(1);
