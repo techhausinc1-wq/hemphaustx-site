@@ -3986,13 +3986,19 @@ function renderLeads(filter='all'){
             }
           }
           const emailAddr = String(lead.email||'').trim();
+          // Plain mailto — opens whatever mail app/account is the OS default
+          // (e.g. Apple Mail with the hemphaustx.com account), pre-filled with
+          // the same quote-and-invoice request as the Gmail button below.
           const emailBtn = emailAddr && /@/.test(emailAddr)
-            ? `<a class="act-btn" href="mailto:${encodeURI(emailAddr)}?subject=${encodeURIComponent('HempHaus — wholesale inquiry')}" title="${emailAddr}">Email</a>`
+            ? (() => {
+                const draft = buildOutreachDraft(lead);
+                return `<a class="act-btn" href="mailto:${encodeURI(emailAddr)}?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}" title="${emailAddr}">Email</a>`;
+              })()
             : '';
-          // Gmail compose — pre-fills a personalized private-label inquiry.
+          // Gmail compose — pre-fills the same quote/invoice request via Gmail web.
           // Uses the /mail/?view=cm URL which opens in a fresh Gmail compose tab.
           const gmailBtn = emailAddr && /@/.test(emailAddr)
-            ? `<a class="act-btn" style="background:#c5221f;color:#fff;border-color:#c5221f;" onclick="event.stopPropagation();openGmailForLead('${enc}');return false;" href="#" title="Open Gmail with a personalized private-label inquiry pre-filled">✉ Gmail</a>`
+            ? `<a class="act-btn" style="background:#c5221f;color:#fff;border-color:#c5221f;" onclick="event.stopPropagation();openGmailForLead('${enc}');return false;" href="#" title="Open Gmail with a price-quote-and-invoice request pre-filled">✉ Gmail</a>`
             : '';
           return (tel ? `<a class="act-btn" href="tel:${tel}">Call</a>` : '') +
                  emailBtn +
@@ -4705,11 +4711,12 @@ ${focusLine}
 
 Our private-label line for Q3-Q4 2026 focuses on: ${HEMPHAUS_LINE}.
 
-Three quick questions to see if there's a fit:
+Four quick questions to see if there's a fit:
 
   1. Do you offer private-label or contract-manufacturing on your finished-goods line?
   2. What's your MOQ (per SKU) and typical lead time from PO to ship?
   3. Do you ship to Texas, and can you provide an ISO-17025 lab COA per lot?
+  4. Could you send over a current price quote (or wholesale price list) for the categories above, plus a sample invoice so we know your terms and can move quickly once we're ready to order?
 
 If any of the above is a yes, happy to send our target volume and share our packaging spec. I'm at (267) 918-9084 or reply to this email.
 
