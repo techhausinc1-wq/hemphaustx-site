@@ -160,9 +160,8 @@
           <!-- WHOLESALE PANE -->
           <div class="form-pane active" id="pane-wholesale">
             <p class="form-help">For CBD shops, day spas, salons, smoke/vape shops, distributors, and other qualified retail partners. We respond within one business day with current wholesale pricing and terms.</p>
-            <form class="contact-form" action="https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID" method="POST" onsubmit="return handleFormSubmit(event, this, 'wholesale')">
-              <input type="hidden" name="_subject" value="HempHaus — wholesale inquiry">
-              <input type="hidden" name="form_type" value="wholesale">
+            <form class="contact-form" onsubmit="return handleFormSubmit(event, this, 'wholesale')">
+              <input type="text" name="_hp" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
               <input type="text" name="business_name" placeholder="Business name" required>
               <input type="text" name="contact_name" placeholder="Your name" required>
               <input type="email" name="email" placeholder="Email" required>
@@ -199,9 +198,8 @@
           <!-- PRESS / OTHER PANE -->
           <div class="form-pane" id="pane-press">
             <p class="form-help">For press, collaborations, partnerships, lab inquiries, supplier outreach, and anything that doesn't fit the other two paths.</p>
-            <form class="contact-form" action="https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID" method="POST" onsubmit="return handleFormSubmit(event, this, 'press')">
-              <input type="hidden" name="_subject" value="HempHaus — press / other inquiry">
-              <input type="hidden" name="form_type" value="press">
+            <form class="contact-form" onsubmit="return handleFormSubmit(event, this, 'press')">
+              <input type="text" name="_hp" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
               <input type="text" name="name" placeholder="Your name" required>
               <input type="text" name="organization" placeholder="Organization / publication">
               <input type="email" name="email" placeholder="Email" required>
@@ -334,48 +332,36 @@
   }
 
   function handleFormSubmit(event, form, paneName) {
-    const status = document.getElementById('status-' + paneName);
-    const action = form.getAttribute('action') || '';
-
-    // If Formspree endpoint isn't configured yet, fall back to mailto
-    if (action.includes('REPLACE_WITH_YOUR_FORM_ID')) {
-      event.preventDefault();
-      const data = new FormData(form);
-      const subject = data.get('_subject') || 'HempHaus inquiry';
-      let body = '';
-      data.forEach((value, key) => {
-        if (!key.startsWith('_') && key !== 'form_type' && value) {
-          body += key.replace(/_/g, ' ') + ': ' + value + '\\n';
-        }
-      });
-      window.location.href = 'mailto:info@hemphaustx.com?subject=' +
-        encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-      status.textContent = 'Opening your email client...';
-      status.style.color = 'var(--cream-dim)';
-      return false;
-    }
-
-    // AJAX submission via Formspree
     event.preventDefault();
+    const status = document.getElementById('status-' + paneName);
     status.textContent = 'Sending...';
     status.style.color = 'var(--cream-dim)';
 
-    fetch(action, {
+    const data = new FormData(form);
+    const name = data.get('contact_name') || data.get('name') || '';
+    const email = data.get('email') || '';
+    const business = data.get('business_name') || data.get('organization') || '';
+    const extraParts = [];
+    ['phone', 'product_line', 'product_interest', 'business_type', 'city_state'].forEach((key) => {
+      const v = data.get(key);
+      if (v) extraParts.push(key.replace(/_/g, ' ') + ': ' + v);
+    });
+    const message = (extraParts.length ? extraParts.join('\n') + '\n\n' : '') + (data.get('message') || '');
+
+    fetch('https://hire-signal.techhausinc1.workers.dev/public/contact', {
       method: 'POST',
-      body: new FormData(form),
-      headers: { 'Accept': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source: 'hemphaus', formType: paneName, name, email, business, message, _hp: data.get('_hp') || '' })
     })
-      .then(response => {
-        if (response.ok) {
+      .then(response => response.json().then(body => ({ ok: response.ok, body })))
+      .then(({ ok, body }) => {
+        if (ok && body.ok) {
           status.textContent = 'Thank you. We will get back to you within one business day.';
           status.style.color = 'var(--green-bright)';
           form.reset();
         } else {
-          response.json().then(data => {
-            status.textContent = (data.errors && data.errors[0] && data.errors[0].message)
-              || 'Something went wrong. Please email info@hemphaustx.com directly.';
-            status.style.color = 'var(--gold)';
-          });
+          status.textContent = (body && body.error) || 'Something went wrong. Please email info@hemphaustx.com directly.';
+          status.style.color = 'var(--gold)';
         }
       })
       .catch(() => {
