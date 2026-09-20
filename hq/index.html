@@ -867,6 +867,21 @@ a.act-btn:hover{text-decoration:none;}
     <div class="main-tab" onclick="switchMainTab('admin')" id="tab-admin" style="display:none;">Admin</div>
   </div>
 
+  <!-- COMPLIANCE BANNER — THCP paused for TX sale, added 2026-09-19 to match the
+       2026-09-12 fix on hemphaustx.com/concentrates (commit e21b6c5). This tool's
+       pitch library and product guide predate that fix and were still telling
+       reps THCP was sellable; this banner + the tags in Product Guide / Today
+       cards are the catch-up fix. Remove only when the TX hold is lifted. -->
+  <div id="compliance-banner" style="display:none;background:#c04040;color:#fff;border-radius:12px;padding:12px 18px;margin-top:14px;font-family:'Inter',sans-serif;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+      <div style="font-size:12.5px;line-height:1.5;">
+        <strong style="text-transform:uppercase;letter-spacing:0.06em;">Compliance hold — THCP:</strong>
+        Texas's emergency THC-isomer rule (effective 7/31/2026) reaches THCP. It was pulled from active sale on hemphaustx.com on 9/12/2026. Do not pitch, quote, or take orders on any THCP SKU (pre-rolls, King, blunt, dab, diamond-dipped) until this notice is removed. HHC, D9, and CBD lines are unaffected.
+      </div>
+      <button onclick="document.getElementById('compliance-banner').style.display='none';sessionStorage.setItem('hh_compliance_dismissed','1');" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">Got it</button>
+    </div>
+  </div>
+
   <!-- MARKET SHORTCUTS -->
   <div class="market-row">
     <span class="market-label">Quick:</span>
@@ -1159,12 +1174,12 @@ a.act-btn:hover{text-decoration:none;}
       <button class="man-nav" onclick="pgScroll('pg-cbgcbn')">CBG / CBN</button>
       <button class="man-nav" onclick="pgScroll('pg-hhc')">HHC</button>
       <button class="man-nav" onclick="pgScroll('pg-edibles')">Edibles</button>
-      <button class="man-nav" onclick="pgScroll('pg-thcp-preroll')">★ THCP Pre-Roll 1g</button>
-      <button class="man-nav" onclick="pgScroll('pg-king-thcp')">★ King THCP 1.5g</button>
-      <button class="man-nav" onclick="pgScroll('pg-thcp-blunt')">★ THCP Blunt 1.5g</button>
-      <button class="man-nav" onclick="pgScroll('pg-diamond-preroll')">★ Diamond-Dipped Pre-Roll</button>
-      <button class="man-nav" onclick="pgScroll('pg-diamond-blunt')">★ Diamond-Dipped Blunt</button>
-      <button class="man-nav" onclick="pgScroll('pg-thcp-dab')">★ THCP Dab</button>
+      <button class="man-nav" onclick="pgScroll('pg-thcp-preroll')" style="color:#c04040;">★ THCP Pre-Roll 1g (Paused)</button>
+      <button class="man-nav" onclick="pgScroll('pg-king-thcp')" style="color:#c04040;">★ King THCP 1.5g (Paused)</button>
+      <button class="man-nav" onclick="pgScroll('pg-thcp-blunt')" style="color:#c04040;">★ THCP Blunt 1.5g (Paused)</button>
+      <button class="man-nav" onclick="pgScroll('pg-diamond-preroll')" style="color:#c04040;">★ Diamond-Dipped Pre-Roll (Paused)</button>
+      <button class="man-nav" onclick="pgScroll('pg-diamond-blunt')" style="color:#c04040;">★ Diamond-Dipped Blunt (Paused)</button>
+      <button class="man-nav" onclick="pgScroll('pg-thcp-dab')" style="color:#c04040;">★ THCP Dab (Paused)</button>
       <button class="man-nav" onclick="pgScroll('pg-hhc-preroll')">★ HHC Pre-Roll 1g</button>
       <button class="man-nav" onclick="pgScroll('pg-d9-gummy')">★ D9 Gummy Pouch</button>
       <button class="man-nav" onclick="pgScroll('pg-pack')">Packaging</button>
@@ -2222,6 +2237,7 @@ a.act-btn:hover{text-decoration:none;}
       <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">Track product orders from suppliers to delivery. All amounts auto-feed to pipeline value.</div>
       <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:flex-end;">
         <button class="hdr-btn green" onclick="openOrderModal()">+ New Order</button>
+        <button class="hdr-btn" onclick="exportCSV('orders')">Export CSV</button>
         <select id="order-filter" onchange="renderOrders()" style="padding:7px 11px;font-size:12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);">
           <option value="all">All Orders</option>
           <option value="pending">Pending</option>
@@ -2445,14 +2461,157 @@ async function fetchWithRetry(url, options = {}, maxAttempts = 2) {
   throw new Error(msg);
 }
 
-// ══ FUNCTION STUBS — features wired in UI but not yet implemented ═══════════
-// (Suppresses ReferenceError on click. Replace with real implementations later.)
-function renderOrders(){
-  const el = document.querySelector('#view-orders');
-  if(!el) return;
-  el.innerHTML = '<div style="max-width:1320px;margin:0 auto;padding:40px 24px;text-align:center;color:var(--text3);"><div style="font-family:Inter,sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px;">Orders</div><div style="font-size:13px;line-height:1.6;max-width:480px;margin:0 auto;">Outbound purchase orders to suppliers (Hempyre, packaging vendors) and retailer wholesale orders will live here. Next session — currently a stub.</div></div>';
+// ══ ORDERS (Purchase Order tracker) ══════════════════════════════════════════
+// Real implementation added 2026-09-19, replacing the "Next session" stub.
+// Tracks outbound POs to suppliers (Hempyre, packaging vendors) from placement
+// through pending → ordered → shipped → received → sold, so there's finally a
+// record of what's on order and what was spent. Wholesale sales TO retailers
+// are already tracked separately via the Order-Closed → Commissions flow
+// (see logOutcome/confirmOrderClose above) — this tab is the supply side,
+// which previously had zero tracking anywhere but a "Hempyre PO file on
+// Desktop." Persisted client-side in localStorage, same pattern as
+// prospects/calledLog/commissions.
+const ORDERS_KEY = 'hh_orders';
+let orders = [];
+function loadOrders(){
+  try{ orders = JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]'); }catch(e){ orders=[]; }
 }
-function openOrderModal(){ alert('Order creation modal coming next session. Use the Hempyre PO file on Desktop for the immediate purchase order.'); }
+function saveOrders(){ localStorage.setItem(ORDERS_KEY, JSON.stringify(orders)); }
+const ORDER_STATUS_LABELS = {pending:'Pending', ordered:'Ordered', shipped:'Shipped', received:'Received', sold:'Sold'};
+const ORDER_STATUS_FLOW = ['pending','ordered','shipped','received','sold'];
+
+function renderOrders(){
+  const container = document.getElementById('orders-container');
+  const statsEl = document.getElementById('order-stats');
+  if(!container || !statsEl) return;
+  const filter = (document.getElementById('order-filter')||{value:'all'}).value;
+  const rows = filter==='all' ? orders.slice() : orders.filter(o=>o.status===filter);
+
+  // Stats
+  const openStatuses = ['pending','ordered','shipped'];
+  const open = orders.filter(o=>openStatuses.includes(o.status));
+  const received = orders.filter(o=>o.status==='received');
+  const sold = orders.filter(o=>o.status==='sold');
+  const totalSpend = orders.reduce((s,o)=>s+(Number(o.totalCost)||0),0);
+  statsEl.innerHTML = `
+    <div class="comm-stat"><div class="comm-stat-label">Open POs</div><div class="comm-stat-amt">${open.length}</div><div class="comm-stat-sub">pending, ordered, or shipped</div></div>
+    <div class="comm-stat"><div class="comm-stat-label">Received</div><div class="comm-stat-amt">${received.length}</div><div class="comm-stat-sub">in stock, not yet sold through</div></div>
+    <div class="comm-stat"><div class="comm-stat-label">Sold Through</div><div class="comm-stat-amt">${sold.length}</div><div class="comm-stat-sub">POs fully sold through</div></div>
+    <div class="comm-stat"><div class="comm-stat-label">Total Spend</div><div class="comm-stat-amt">${fmtMoney(totalSpend)}</div><div class="comm-stat-sub">${orders.length} PO${orders.length===1?'':'s'} all-time</div></div>
+  `;
+
+  if(orders.length===0){
+    container.innerHTML = `<div style="padding:48px;text-align:center;color:var(--text3);">
+      <div style="font-family:'Inter',sans-serif;font-size:17px;color:var(--text2);margin-bottom:6px;">No orders yet</div>
+      <div style="font-size:12px;">Click + New Order to track supplier orders, sales orders, and fulfillments.</div>
+    </div>`;
+    return;
+  }
+  if(rows.length===0){
+    container.innerHTML = `<div style="padding:48px;text-align:center;color:var(--text3);">
+      <div style="font-family:'Inter',sans-serif;font-size:17px;color:var(--text2);margin-bottom:6px;">No orders match this filter</div>
+      <div style="font-size:12px;">Try "All Orders" or add a new one.</div>
+    </div>`;
+    return;
+  }
+  const sorted = rows.slice().sort((a,b)=>new Date(b.orderDate||b.createdAt)-new Date(a.orderDate||a.createdAt));
+  container.innerHTML = sorted.map(o=>{
+    const nextIdx = ORDER_STATUS_FLOW.indexOf(o.status)+1;
+    const nextStatus = ORDER_STATUS_FLOW[nextIdx];
+    return `<div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <div style="min-width:220px;flex:1;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <strong style="color:var(--text);font-family:'Inter',sans-serif;">${esc(o.supplier)}</strong>
+          <span class="comm-status ${esc(o.status)==='pending'?'pending':(o.status==='sold'?'paid':'earned')}">${esc(ORDER_STATUS_LABELS[o.status]||o.status)}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px;">${esc(o.items)} ${o.quantity?`&middot; qty ${esc(String(o.quantity))}`:''}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Ordered ${esc(o.orderDate||'—')}${o.expectedDate?` &middot; expected ${esc(o.expectedDate)}`:''}${o.receivedDate?` &middot; received ${esc(o.receivedDate)}`:''}</div>
+        ${o.notes?`<div style="font-size:11px;color:var(--text3);margin-top:4px;">${esc(o.notes)}</div>`:''}
+      </div>
+      <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <div class="comm-amt bigger">${fmtMoney(o.totalCost)}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
+          ${nextStatus ? `<button class="comm-action" onclick="advanceOrderStatus('${o.id}')">Mark ${esc(ORDER_STATUS_LABELS[nextStatus])}</button>` : ''}
+          <button class="comm-action" onclick="openOrderModal('${o.id}')">Edit</button>
+          <button class="comm-action danger" onclick="deleteOrder('${o.id}')">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let orderModalEditId = null;
+function openOrderModal(editId){
+  orderModalEditId = editId || null;
+  const o = editId ? orders.find(x=>x.id===editId) : null;
+  document.getElementById('order-modal-title').textContent = o ? 'Edit order' : 'New order';
+  document.getElementById('order-supplier').value = o ? o.supplier : '';
+  document.getElementById('order-items').value = o ? o.items : '';
+  document.getElementById('order-qty').value = o ? o.quantity : '';
+  document.getElementById('order-unit-cost').value = o ? o.unitCost : '';
+  document.getElementById('order-status').value = o ? o.status : 'pending';
+  document.getElementById('order-date').value = o ? o.orderDate : new Date().toISOString().slice(0,10);
+  document.getElementById('order-expected-date').value = o ? (o.expectedDate||'') : '';
+  document.getElementById('order-notes').value = o ? (o.notes||'') : '';
+  document.getElementById('order-modal').style.display = 'flex';
+}
+function closeOrderModal(){
+  document.getElementById('order-modal').style.display = 'none';
+  orderModalEditId = null;
+}
+function saveOrderModal(){
+  const supplier = document.getElementById('order-supplier').value.trim();
+  const items = document.getElementById('order-items').value.trim();
+  const quantity = parseFloat(document.getElementById('order-qty').value)||0;
+  const unitCost = parseFloat(document.getElementById('order-unit-cost').value)||0;
+  const status = document.getElementById('order-status').value;
+  const orderDate = document.getElementById('order-date').value || new Date().toISOString().slice(0,10);
+  const expectedDate = document.getElementById('order-expected-date').value || '';
+  const notes = document.getElementById('order-notes').value.trim();
+  if(!supplier || !items){ alert('Supplier and items are required.'); return; }
+  const totalCost = quantity && unitCost ? quantity*unitCost : unitCost;
+  if(orderModalEditId){
+    const o = orders.find(x=>x.id===orderModalEditId);
+    if(o){
+      Object.assign(o, {supplier, items, quantity, unitCost, totalCost, status, orderDate, expectedDate, notes});
+      if(status==='received' && !o.receivedDate) o.receivedDate = new Date().toISOString().slice(0,10);
+    }
+  } else {
+    const now = new Date();
+    orders.push({
+      id: 'ord-'+now.getTime()+'-'+Math.random().toString(36).slice(2,6),
+      supplier, items, quantity, unitCost, totalCost, status, orderDate, expectedDate,
+      receivedDate: status==='received' ? now.toISOString().slice(0,10) : '',
+      notes,
+      createdBy: accessCode,
+      createdByName: (window.currentUser||{}).name || 'Unknown',
+      createdAt: now.toISOString(),
+    });
+  }
+  saveOrders();
+  closeOrderModal();
+  renderOrders();
+  showToast(`Order ${orderModalEditId?'updated':'saved'}: ${supplier}`,'success');
+}
+function advanceOrderStatus(id){
+  const o = orders.find(x=>x.id===id); if(!o) return;
+  const idx = ORDER_STATUS_FLOW.indexOf(o.status);
+  const next = ORDER_STATUS_FLOW[idx+1];
+  if(!next) return;
+  o.status = next;
+  if(next==='received') o.receivedDate = new Date().toISOString().slice(0,10);
+  saveOrders();
+  renderOrders();
+  showToast(`${o.supplier} → ${ORDER_STATUS_LABELS[next]}`,'success');
+}
+function deleteOrder(id){
+  const o = orders.find(x=>x.id===id); if(!o) return;
+  if(!confirm(`Delete this order from ${o.supplier}? This can't be undone.`)) return;
+  orders = orders.filter(x=>x.id!==id);
+  saveOrders();
+  renderOrders();
+  showToast('Order deleted','success');
+}
 function printRouteSheet(){
   // Build a printable route sheet from todayQueue
   const q = (typeof todayQueue !== 'undefined' && todayQueue.length) ? todayQueue : [];
@@ -2477,7 +2636,7 @@ function printRouteSheet(){
 // body level — getElementById() still finds them, switchMainTab() still works.
 (function liftBrokenViewsToBody(){
  const lift = () => {
-    ['view-today','view-called','view-commissions','oc-modal','scan-modal','view-orders','view-admin','view-products','outreach-overlay','notes-overlay','modal-overlay'].forEach(id=>{
+    ['view-today','view-called','view-commissions','oc-modal','order-modal','scan-modal','view-orders','view-admin','view-products','outreach-overlay','notes-overlay','modal-overlay'].forEach(id=>{
  const el = document.getElementById(id);
  if(el && el.parentElement && el.parentElement.tagName !== 'BODY'){
  document.body.appendChild(el);
@@ -2486,6 +2645,27 @@ function printRouteSheet(){
   };
  if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', lift); }
  else { lift(); }
+})();
+
+// ══ COMPLIANCE RIBBON — flag THCP cards in the Product Guide as paused ═══════
+// Same 2026-09-19 catch-up fix as applyComplianceHold() above, applied to the
+// static Product Guide markup (which pitchFor() doesn't touch since it's HTML,
+// not data). Tags the 6 THCP cards so a rep skimming the guide sees the hold
+// before they see a sellable-looking spec sheet.
+(function tagPausedProductCards(){
+ const ids = ['pg-thcp-preroll','pg-thcp-dab','pg-king-thcp','pg-thcp-blunt','pg-diamond-preroll','pg-diamond-blunt'];
+ const attach = () => ids.forEach(id=>{
+ const el = document.getElementById(id);
+ if(el && !el.querySelector('.compliance-ribbon')){
+ const r = document.createElement('div');
+ r.className = 'compliance-ribbon';
+ r.style.cssText = 'background:#c04040;color:#fff;font-family:Inter,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:9px 16px;border-radius:10px;margin-bottom:14px;';
+ r.textContent = 'Paused for TX sale — do not pitch or quote (emergency THC-isomer rule, effective 7/31/2026)';
+ el.insertBefore(r, el.firstChild);
+      }
+    });
+ if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', attach); }
+ else { attach(); }
 })();
 
 // ══ PITCH LIBRARY ════════════════════════════════════════════════════════════
@@ -2657,13 +2837,32 @@ const PITCH_BY_TYPE = {
  angle: 'This is buy-side — flip the script. We are the buyer asking about THEIR catalog',
   },
 };
+// ══ COMPLIANCE HOLD — THCP paused for TX sale, added 2026-09-19 ═════════════
+// Texas's emergency THC-isomer rule (effective 7/31/2026) reaches THCP. It was
+// pulled from active sale on hemphaustx.com/concentrates on 9/12/2026 (commit
+// e21b6c5), but this pitch library was last touched 8/13/2026 and was still
+// telling reps THCP was sellable, federal-cliff-compliant inventory. Rather
+// than hand-edit prose in 17 category blocks (error-prone, easy to miss one),
+// pitchFor() runs every result through this filter: any THCP SKU gets tagged
+// "— PAUSED (TX)" and pushed below sellable SKUs, and the hook gets a plain
+// correction appended. Remove isPausedSku's THCP check when the hold lifts.
+function isPausedSku(name){ return /THCP/i.test(name||''); }
+const COMPLIANCE_HOLD_NOTE = "COMPLIANCE HOLD: THCP is paused for sale in Texas (emergency THC-isomer rule, effective 7/31/2026) — do not pitch, quote, or take orders on it until this notice is removed.";
+function applyComplianceHold(pitch){
+ const skus = pitch.skus.map(s => isPausedSku(s.name)
+ ? {...s, name: s.name + ' — PAUSED (TX)', wholesale: 'On hold', retail: 'On hold', paused: true}
+ : s
+  ).sort((a,b) => (a.paused?1:0) - (b.paused?1:0));
+ const hasPaused = skus.some(s=>s.paused);
+ return hasPaused ? {...pitch, skus, hook: pitch.hook + '  ' + COMPLIANCE_HOLD_NOTE} : {...pitch, skus};
+}
 function pitchFor(typeStr){
  const t=(typeStr||'').toLowerCase();
  for(const k of Object.keys(PITCH_BY_TYPE)){
- if(t.includes(k)) return PITCH_BY_TYPE[k];
+ if(t.includes(k)) return applyComplianceHold(PITCH_BY_TYPE[k]);
   }
   // Generic fallback for unknown types
- return {
+ return applyComplianceHold({
  hook: "TX-licensed wholesale. Texas-made hemp products, full COA on every batch, 7-10 day delivery. Wholesale-direct pricing.",
  skus: [
       {name:'CBD Tincture 1500mg', wholesale:'$48/unit', retail:'$95-120'},
@@ -2672,7 +2871,7 @@ function pitchFor(typeStr){
     ],
  ask: '$200-500 opening order',
  angle: 'Lead with our most universal SKUs and adjust based on what catches their interest',
-  };
+  });
 }
 
 // ══ QUICK-DISCOVER PRESETS ═══════════════════════════════════════════════════
@@ -2776,7 +2975,11 @@ function checkAccess(){
  document.getElementById('tab-today').style.display='flex';
  document.getElementById('tab-called').style.display='flex';
  document.getElementById('tab-commissions').style.display='flex';
+ if(sessionStorage.getItem('hh_compliance_dismissed')!=='1'){
+ document.getElementById('compliance-banner').style.display='block';
+    }
  loadProspects();
+ loadOrders();
  loadTodayState();
  refreshTodayBadge();
  refreshCalledBadge();
@@ -2925,7 +3128,7 @@ function renderCallCard(key, isDone){
         </div>
         <div class="call-card-section">
           <div class="call-card-label">What to sell them (top ${pitch.skus.length})</div>
-          ${pitch.skus.map(s=>`<div class="call-card-sku"><div class="call-card-sku-name">${esc(s.name)}</div><div class="call-card-sku-price">${esc(s.wholesale)}</div></div>`).join('')}
+          ${pitch.skus.map(s=>`<div class="call-card-sku"><div class="call-card-sku-name" ${s.paused?'style="color:#c04040;font-weight:600;"':''}>${esc(s.name)}</div><div class="call-card-sku-price" ${s.paused?'style="color:#c04040;"':''}>${esc(s.wholesale)}</div></div>`).join('')}
           <div style="font-size:11px;color:var(--text3);margin-top:6px;font-style:normal;"><strong>Angle:</strong> ${esc(pitch.angle)}</div>
         </div>
       </div>
@@ -3458,6 +3661,15 @@ buildExportRows = function(scope){
  c.orderDate, c.prospectName, c.orderTotal, c.commissionPct||0, c.bonusPct||0,
  Number(c.commissionAmt||0).toFixed(2), c.status, c.paidDate||'', c.po||'',
  c.closedByName||c.closedBy||'', c.notes||''
+    ]));
+ return rows;
+  }
+ if(scope==='orders'){
+ const rows = [['Order Date','Supplier','Items','Qty','Unit Cost','Total Cost','Status','Expected Date','Received Date','Notes','Created By']];
+ orders.forEach(o=>rows.push([
+ o.orderDate||'', o.supplier||'', o.items||'', o.quantity||0, Number(o.unitCost||0).toFixed(2),
+ Number(o.totalCost||0).toFixed(2), ORDER_STATUS_LABELS[o.status]||o.status||'', o.expectedDate||'',
+ o.receivedDate||'', o.notes||'', o.createdByName||o.createdBy||''
     ]));
  return rows;
   }
@@ -4398,10 +4610,12 @@ function downloadBlob(content, filename, mime){
 }
 function exportCSV(scope){
  scope=scope||'all';
- if(!allLeads.length&&!Object.keys(prospects).length){showToast('Nothing to export yet','error');return;}
+ if(scope==='orders'){
+ if(!orders.length){showToast('No orders to export yet','error');return;}
+  } else if(!allLeads.length&&!Object.keys(prospects).length){showToast('Nothing to export yet','error');return;}
  const rows=buildExportRows(scope);
  const today=new Date().toISOString().split('T')[0];
- const fileBase=scope==='prospects'?'hemphaus-prospects':scope==='scout'?'hemphaus-scout-leads':'hemphaus-scout';
+ const fileBase=scope==='prospects'?'hemphaus-prospects':scope==='scout'?'hemphaus-scout-leads':scope==='orders'?'hemphaus-orders':'hemphaus-scout';
  downloadBlob('\uFEFF'+rowsToCSV(rows), `${fileBase}-${today}.csv`, 'text/csv;charset=utf-8;');
  showToast(`${rows.length-1} rows exported as CSV`,'success');
 }
@@ -4996,6 +5210,63 @@ document.getElementById('coach-input').addEventListener('keydown',e=>{if(e.key==
 </div>
 
 <!-- ORDER-CLOSE MODAL -->
+<div class="modal-overlay" id="order-modal" onclick="if(event.target===this)closeOrderModal()" style="display:none;position:fixed;inset:0;background:rgba(20,30,20,0.6);z-index:998;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:var(--white);border-radius:16px;max-width:480px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.3);overflow:hidden;max-height:90vh;overflow-y:auto;">
+    <div style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);">
+      <div id="order-modal-title" style="font-family:'Inter',sans-serif;font-size:17px;font-weight:700;color:var(--text);">New order</div>
+      <button onclick="closeOrderModal()" style="background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;line-height:1;">&times;</button>
+    </div>
+    <div class="oc-modal-body">
+      <div class="oc-field">
+        <label class="oc-label">Supplier</label>
+        <input type="text" id="order-supplier" placeholder="e.g. Hempyre, [packaging vendor]" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);"/>
+      </div>
+      <div class="oc-field">
+        <label class="oc-label">Items</label>
+        <input type="text" id="order-items" placeholder="e.g. 500x 1g HHC pre-roll tubes, unlabeled bulk" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);"/>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div class="oc-field" style="flex:1;">
+          <label class="oc-label">Quantity</label>
+          <input class="oc-amount-input" type="number" step="1" min="0" placeholder="0" id="order-qty"/>
+        </div>
+        <div class="oc-field" style="flex:1;">
+          <label class="oc-label">Unit cost</label>
+          <input class="oc-amount-input" type="number" step="0.01" min="0" placeholder="0.00" id="order-unit-cost"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div class="oc-field" style="flex:1;">
+          <label class="oc-label">Order date</label>
+          <input type="date" id="order-date" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);"/>
+        </div>
+        <div class="oc-field" style="flex:1;">
+          <label class="oc-label">Expected <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+          <input type="date" id="order-expected-date" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);"/>
+        </div>
+      </div>
+      <div class="oc-field">
+        <label class="oc-label">Status</label>
+        <select id="order-status" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);">
+          <option value="pending">Pending</option>
+          <option value="ordered">Ordered</option>
+          <option value="shipped">Shipped</option>
+          <option value="received">Received</option>
+          <option value="sold">Sold</option>
+        </select>
+      </div>
+      <div class="oc-field">
+        <label class="oc-label">Notes <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+        <textarea id="order-notes" placeholder="PO number, tracking, batch/strain, anything else..." style="width:100%;min-height:64px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);resize:vertical;"></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+        <button class="hdr-btn" onclick="closeOrderModal()">Cancel</button>
+        <button class="hdr-btn green" onclick="saveOrderModal()" style="font-size:11px;padding:9px 18px;">Save order</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="oc-modal" onclick="if(event.target===this)closeOrderCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(20,30,20,0.6);z-index:998;align-items:center;justify-content:center;padding:24px;">
   <div style="background:var(--white);border-radius:16px;max-width:480px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.3);overflow:hidden;">
     <div style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
