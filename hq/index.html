@@ -2401,10 +2401,22 @@ const WORKER_URL   = 'https://bitter-pheasant-47.techhausinc1.deno.net';
 const ACCESS_CODES = ['hemphaus2025'];
 const MASTER_CODES = ['vlad2025'];  // Master accounts with a typed code (full access). The owner signs in by PIN, see PIN_LOGINS.
 const DIRECTOR_CODES = ['jane2025'];           // Director-level (Scout + Prospects + Orders, sales-focused)
-// Code sent to the Deno worker — separate whitelist on the server side.
-// Adding new local users (like Jane) doesn't require re-deploying the worker; the local
-// gate handles UI access, this constant handles API access.
-const WORKER_AUTH  = 'ivan2025';
+// The AI proxy no longer accepts any code kept in this page. Once the gate below
+// accepts a sign-in, the proxy checks that same sign-in and returns a session that
+// expires; AI calls send that session. Nothing here works on the proxy by itself.
+let WORKER_AUTH  = '';
+async function aiSignIn(typed){
+  try{
+    const ctl = new AbortController();
+    const timer = setTimeout(()=>ctl.abort(), 10000);
+    const r = await fetch(WORKER_URL+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({app:'hhq',code:typed}),signal:ctl.signal});
+    clearTimeout(timer);
+    const d = await r.json().catch(()=>({}));
+    if(r.ok && d.token){ WORKER_AUTH = d.token; return true; }
+    console.warn('AI sign-in not accepted:', r.status);
+  }catch(e){ console.warn('AI sign-in failed:', e); }
+  return false;
+}
 const ALL_CODES = [...ACCESS_CODES, ...MASTER_CODES, ...DIRECTOR_CODES];
 const ROLE_MAP = {
   'ivan2025':     {name:'Ivan Svedov', role:'master', title:'CEO & President'},
@@ -2968,6 +2980,7 @@ function fmtMoney(n){ return '$'+Number(n||0).toFixed(2).replace(/\B(?=(\d{3})+(
 document.getElementById('access-input').addEventListener('keydown',e=>{if(e.key==='Enter')checkAccess();});
 async function checkAccess(){
  let val=document.getElementById('access-input').value.trim().toLowerCase();
+ const typed=val;   // what was typed, before the PIN is mapped to a user key
  if(pinChecking) return;
  pinChecking=true;
  const pinKey=await pinUserKey(val);   // owner PIN -> his existing user key
@@ -2977,6 +2990,7 @@ async function checkAccess(){
  accessCode=val;
  const userInfo=ROLE_MAP[val]||{name:'Rep',role:'rep',title:'Sales'};
  window.currentUser=userInfo;
+ aiSignIn(typed).then(ok=>{ if(!ok && typeof showToast==='function') showToast('AI features could not start. Reload the page and sign in again.', 'error'); });
  document.getElementById('gate-screen').style.display='none';
  document.getElementById('app').style.display='block';
  document.getElementById('gate-error').classList.remove('show');
