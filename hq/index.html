@@ -2289,7 +2289,7 @@ a.act-btn:hover{text-decoration:none;}
           <div style="background:var(--green-bg);border:1px solid rgba(46,125,70,0.25);border-radius:10px;padding:14px;">
             <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:0.15em;color:var(--text3);margin-bottom:8px;">Master Accounts</div>
             <div style="display:flex;flex-direction:column;gap:7px;">
-              <div><span style="font-weight:600;color:var(--text);">Ivan Svedov</span> <span style="font-family:'Inter',sans-serif;font-weight:600;font-size:11px;color:var(--green);background:var(--green-bg2);padding:2px 8px;border-radius:6px;margin-left:6px;">ivan2025</span><div style="font-size:11px;color:var(--text3);margin-top:2px;">CEO &amp; President · Full Access</div></div>
+              <div><span style="font-weight:600;color:var(--text);">Ivan Svedov</span> <span style="font-family:'Inter',sans-serif;font-weight:600;font-size:11px;color:var(--green);background:var(--green-bg2);padding:2px 8px;border-radius:6px;margin-left:6px;">PIN</span><div style="font-size:11px;color:var(--text3);margin-top:2px;">CEO &amp; President · Full Access</div></div>
               <div><span style="font-weight:600;color:var(--text);">Vladimir Spivak</span> <span style="font-family:'Inter',sans-serif;font-weight:600;font-size:11px;color:var(--green);background:var(--green-bg2);padding:2px 8px;border-radius:6px;margin-left:6px;">vlad2025</span><div style="font-size:11px;color:var(--text3);margin-top:2px;">Secretary &amp; Investor · Full Access</div></div>
             </div>
           </div>
@@ -2399,7 +2399,7 @@ a.act-btn:hover{text-decoration:none;}
 const WORKER_URL   = 'https://bitter-pheasant-47.techhausinc1.deno.net';
 // Codes the LOCAL client gate accepts (UI access control — independent of the worker)
 const ACCESS_CODES = ['hemphaus2025'];
-const MASTER_CODES = ['ivan2025','vlad2025'];  // Master accounts (full access incl. Admin)
+const MASTER_CODES = ['vlad2025'];  // Master accounts with a typed code (full access). The owner signs in by PIN, see PIN_LOGINS.
 const DIRECTOR_CODES = ['jane2025'];           // Director-level (Scout + Prospects + Orders, sales-focused)
 // Code sent to the Deno worker — separate whitelist on the server side.
 // Adding new local users (like Jane) doesn't require re-deploying the worker; the local
@@ -2412,6 +2412,24 @@ const ROLE_MAP = {
   'jane2025':     {name:'Jane Spivak', role:'director', title:'Director of Sales Development'},
   'hemphaus2025': {name:'HempHaus Rep', role:'rep', title:'Sales Representative'},
 };
+// Owner PIN sign-in. Only a salted, stretched hash of the PIN is kept here,
+// never the PIN itself. A match signs the owner in under his existing user
+// key in ROLE_MAP, so records already saved under that key keep his name.
+const PIN_LOGINS = [{name:'Ivan Svedov', salt:'6b802d144304aaac3c01deae1312f109', iter:250000, hash:'e25691056f6bd60e64c38fd000f5ed1afe931f12073610a60e92d3b596e9d1b8'}];
+let pinChecking = false;
+async function pinUserKey(val){
+  if(!/^\d{4,8}$/.test(val) || !(window.crypto && crypto.subtle)) return null;
+  const enc = new TextEncoder();
+  for(const p of PIN_LOGINS){
+    try{
+      const key = await crypto.subtle.importKey('raw', enc.encode(val), 'PBKDF2', false, ['deriveBits']);
+      const bits = await crypto.subtle.deriveBits({name:'PBKDF2', hash:'SHA-256', salt:enc.encode(p.salt), iterations:p.iter}, key, 256);
+      const hex = Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,'0')).join('');
+      if(hex === p.hash) return Object.keys(ROLE_MAP).find(k=>ROLE_MAP[k].name===p.name) || null;
+    }catch(e){ console.warn('PIN check failed:', e); }
+  }
+  return null;
+}
 const CACHE_KEY    = 'hh_last_scan';
 const PROSPECTS_KEY= 'hh_prospects';
 
@@ -2948,9 +2966,14 @@ function fmtMoney(n){ return '$'+Number(n||0).toFixed(2).replace(/\B(?=(\d{3})+(
 
 // ══ GATE ══════════════════════════════════════════════════════════════════════
 document.getElementById('access-input').addEventListener('keydown',e=>{if(e.key==='Enter')checkAccess();});
-function checkAccess(){
- const val=document.getElementById('access-input').value.trim().toLowerCase();
- if(ALL_CODES.map(c=>c.toLowerCase()).includes(val)){
+async function checkAccess(){
+ let val=document.getElementById('access-input').value.trim().toLowerCase();
+ if(pinChecking) return;
+ pinChecking=true;
+ const pinKey=await pinUserKey(val);   // owner PIN -> his existing user key
+ pinChecking=false;
+ if(pinKey) val=pinKey;
+ if(pinKey || ALL_CODES.map(c=>c.toLowerCase()).includes(val)){
  accessCode=val;
  const userInfo=ROLE_MAP[val]||{name:'Rep',role:'rep',title:'Sales'};
  window.currentUser=userInfo;
